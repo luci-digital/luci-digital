@@ -1,0 +1,80 @@
+GitHub Repository Structure
+
+Purpose:
+This repository contains the code, documentation, and configuration files for the Luci Digital platform, including IoT integration, mobile device management, cloud services, and more. Below is an overview of the repository structure and how to navigate it.
+
+Repository Structure
+
+The following structure outlines how the repository is organized:
+
+/
+├── README.md
+├── CONTRIBUTING.md
+├── docs/
+│   ├── Repository_Structure.md
+│   ├── System_Components_and_Deployment.md
+│   ├── Communication_and_Client_Management.md
+│   ├── Mobile_Device_Management.md
+│   ├── Password_and_Key_Management.md
+│   ├── Backup_and_Disaster_Recovery.md
+│   ├── Service_Delivery.md
+├── src/
+│   ├── (Source code for the platform)
+├── config/
+│   ├── (Configuration files for the system)
+├── scripts/
+│   ├── (Deployment and maintenance scripts)
+├── tests/
+│   ├── (Testing frameworks and test cases)
+├── ci/
+│   ├── (Continuous integration and deployment scripts)
+
+Description of Key Files and Directories
+
+	•	README.md:
+Located in the root of the repository, this file contains the project overview, the executive summary, and key details about the Luci Digital platform.
+	•	CONTRIBUTING.md:
+Located in the root, this file provides guidelines for contributors, including coding standards, testing requirements, and the process for submitting pull requests.
+	•	docs/:
+This directory contains documentation files that explain the various components of the system:
+	•	Repository_Structure.md: This document (the one you are reading) that describes the organization of the repository.
+	•	System_Components_and_Deployment.md: Details on the architecture of the platform, including smart boxes, Synology NAS integration, and Docker containers.
+	•	Communication_and_Client_Management.md: Information on how communication with clients is organized, including unique email and phone channels.
+	•	Mobile_Device_Management.md: Explains how mobile devices are managed using ManageEngine ServiceDesk Plus.
+	•	Password_and_Key_Management.md: Covers the system’s approach to password and key management for security.
+	•	Backup_and_Disaster_Recovery.md: Provides details on backup strategies, both local and cloud-based, using Synology and Proxmox Backup Server.
+	•	Service_Delivery.md: Explains how services are delivered, including network monitoring and AI integrations.
+	•	src/:
+This directory contains all source code related to the Luci Digital platform. Subdirectories may be organized by feature (e.g., AI modules, blockchain, IoT control, etc.).
+	•	config/:
+This directory holds configuration files for various system components, including network configurations, Docker configurations, and service-specific settings.
+	•	scripts/:
+Contains automation scripts used for deployment, maintenance, and setup of the platform. This may include scripts for setting up Docker containers, initializing services, or running backups.
+	•	tests/:
+This directory holds testing frameworks and test cases. It should contain unit tests, integration tests, and any other forms of testing to ensure system reliability.
+	•	ci/:
+This directory contains scripts related to continuous integration (CI) and deployment pipelines. This may include GitHub Actions, Jenkins scripts, or other CI tools.
+
+Branching Strategy
+
+	•	main branch:
+The main branch contains the stable, production-ready version of the Luci Digital platform. This branch is protected, and all changes must be submitted via pull requests.
+	•	dev branch:
+The dev branch is used for active development. New features, bug fixes, and updates are pushed here first before being merged into the main branch after successful testing.
+	•	feature branches:
+New features are developed in their own branches, named using the convention feature/feature-name. Once the feature is complete and tested, it can be merged into the dev branch via a pull request.
+
+Deployment Instructions
+
+	•	Docker:
+The platform uses Docker for deployment. To set up the system, use the provided Docker Compose files located in the /config directory.
+Example:
+
+docker-compose up -d
+
+	•	CI/CD Pipelines:
+Continuous Integration and Continuous Deployment (CI/CD) pipelines are configured in the /ci directory. These scripts ensure that code is automatically tested and deployed when changes are merged into the main or dev branches.
+	•	Testing:
+Testing is automated using the frameworks set up in the /tests directory. Run tests before submitting pull requests to ensure that the system is functioning as expected.
+
+This structure is designed to keep the Luci Digital platform modular, scalable, and easy to maintain. Feel free to adjust and expand as the project evolves.
