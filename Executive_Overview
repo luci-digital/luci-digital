@@ -1,60 +1,56 @@
-Luci Digital - Executive Overview
+Executive Overview - Luci Digital Platform
 
-The Luci Digital platform is a cutting-edge, decentralized, AI-driven tech services system designed to integrate smart home technology, IoT devices, blockchain security, and advanced communication features. The platform’s architecture supports individuals, businesses, and families, providing a comprehensive solution for managing devices, networks, and AI-driven automation.
+Luci Digital is a holistic tech platform designed to integrate IoT, AI-driven automation, decentralized identity management, and secure networking for businesses, families, and individuals. The platform is built on three key nodes: Nebula, Tron, and Data, each with specific roles in managing AI workflows, secure storage, cloud orchestration, and automated services. Central to this infrastructure is the Lucia AI, an intelligent assistant hosted on Nebula that orchestrates services across all devices and networks.
 
-Luci Digital is built on a combination of edge computing, private cloud infrastructure, and decentralized networks, ensuring high scalability, security, and privacy. At its core, Luci Digital leverages AI assistants tied to individuals, smart IoT networks, and advanced security protocols to deliver seamless services.
+The system employs advanced security protocols such as multi-factor authentication (MFA), decentralized identity management through the Hedera network, and Vault for secrets management. Additionally, Traefik is used for dynamic reverse proxy and traffic management, ensuring secure communication between all nodes.
 
-Core Components
+Core Components:
 
-1. One Person, One AI Model
+	•	Nebula: Hosts Lucia AI, manages security protocols, and orchestrates the system’s AI workflows. It ensures secure communication and handles cloud integration and certificate management.
+	•	Tron: Processes AI workflows, handles tokenization, and integrates service desk management through a series of VMs. Tron acts as the entry point for the network, routing traffic securely between nodes.
+	•	Data: Responsible for data storage, backup, and disaster recovery. It ensures redundancy and securely stores data processed by the AI and IoT systems.
 
-Luci Digital is built on the concept of personalized AI assistants. Each AI assistant is uniquely tied to an individual rather than a business or organization. These AI assistants provide real-time assistance and automation, processing data locally on edge devices like smart boxes and NAS systems.
+Networking Configuration
 
-2. Mobile Device Management (MDM) Integration
+	•	Tron as the Entry Node: All traffic is routed through Tron, which directs requests to either Nebula or Data based on the type of service required. Tron handles both external and internal requests and routes them securely using Traefik as a dynamic reverse proxy.
+	•	Secure Communication: Data transmitted between nodes is encrypted end-to-end, with Vault ensuring secure storage of secrets such as API keys, tokens, and credentials.
+	•	Redundancy and Backup: Data ensures that all critical information is backed up and recoverable, with failover systems in place for continuity during system outages.
 
-ManageEngine ServiceDesk Plus is integrated to manage devices, ensuring that all devices connected to the platform are tokenized, tracked, and billed appropriately. This integration ensures the seamless management of devices, including remote monitoring and control.
+Updated README Structure
 
-3. Watermarked Communications
-
-Luci Digital employs advanced security by embedding AR-readable watermarks in all communications—both digital and physical. These watermarks are backed by NFTs on the Hedera blockchain, verifying the originality of the content and preventing unauthorized reproduction. The watermarks can also trigger interactive AR experiences, further enhancing user engagement.
-
-4. IoT Network and HiLuciNet Gateway
-
-The HiLuciNet gateway is a private IoT gateway integrated with The Things Network, utilizing LoRaWAN technology to track and manage IoT devices. Applications include soil moisture tracking, air quality monitoring, and pet tracking. HiLuciNet is built to scale across Alberta, ensuring private, reliable IoT data transmission.
-
-5. Security and Identity Management
-
-Luci Digital employs a zero-trust security architecture, incorporating multi-factor authentication (MFA), biometric authentication (Face ID, Touch ID, security keys), and decentralized identity management. These measures ensure that access to the platform is highly secure and protected against phishing attacks or unauthorized access.
-
-6. Backup and Disaster Recovery
-
-The platform offers end-to-end encrypted backups through Synology NAS and Proxmox Backup Server, ensuring that all client data is securely stored and easily recoverable in the event of a disaster. This system allows for encrypted local and cloud backups, ensuring both flexibility and security for businesses and families.
-
-7. AI and Automation Workflows
-
-AI agents like Lucia (the personalized AI assistant for Daryl) are central to the Luci Digital platform. These AI agents handle client management, automate routine tasks, manage IoT devices, and monitor networks in real-time. AI is deployed at the edge, providing immediate analysis and response.
-
-8. Surveillance Systems
-
-Luci Digital integrates surveillance camera systems as part of its IoT network. These systems are managed through smart boxes, allowing for reliable, scalable monitoring of homes and businesses. Video data is securely stored and can be accessed remotely, providing an additional layer of security for clients.
-
-9. Augmented Reality for Network Visualization
-
-Augmented reality (AR) features allow users to visualize network connections, packet flow, and device relationships in real time. This feature enables more intuitive management and troubleshooting of network systems, offering insights into how data flows across connected devices. The AR interface can be accessed through smartphones, enhancing the user experience.
-
-Platform Architecture
-
-The Luci Digital platform operates using the following layers of infrastructure:
-
-	•	Edge Computing: Localized processing of AI and IoT data on smart boxes and NAS systems to ensure real-time responsiveness.
-	•	Private Cloud: Synology NAS and Docker containers provide private cloud storage and service deployment, enabling scalability across home and business environments.
-	•	LoRaWAN Network: HiLuciNet, a private IoT network, utilizes LoRaWAN technology to ensure reliable, long-range communication between IoT devices.
-	•	Security Protocols: The platform leverages advanced encryption, multi-factor authentication, and biometric security to protect all communications and data.
-
-Future Expansion
-
-Luci Digital is designed with scalability in mind. Future iterations of the platform will include:
-
-	•	Expansion of AI Capabilities: Continuing development of personalized AI assistants to further enhance automation, client interactions, and network management.
-	•	Further Integration of Augmented Reality: Expanding the use of AR to include more interactive experiences with IoT devices and communication systems.
-	•	Meta Characters and NFT Integration: Luci Digital will explore the creation of meta characters, tied to AR interactions and NFT 2.0, to create unique, collectible digital assets that users can interact with across platforms.
+	1.	Executive_Overview.md
+	•	A high-level description of the platform, including key components and their roles.
+	2.	System_Components_and_Deployment.md
+	•	Details on the setup and deployment of Nebula, Tron, and Data.
+	•	Configuration details for VMs, AI workflows, and cloud orchestration.
+	3.	Networking_Configuration.md
+	•	Overview of how traffic is managed through Tron, and secure communication between nodes.
+	•	Integration of Traefik for reverse proxy and Vault for secrets management.
+	4.	Security_Protocols.md
+	•	Explanation of security measures such as MFA, decentralized identity (DID) management with Hedera, and encrypted data storage.
+	•	Role of Nebula in managing security protocols across the system.
+	5.	AI_Workflows_and_Automation.md
+	•	Detailed workflows for AI processing, automation tasks, and the integration of Lucia AI.
+	•	How AI tasks are distributed between Nebula and Tron.
+	6.	IoT_Network_and_HiLuciNet_Gateway.md
+	•	Configuration of IoT devices through the HiLuciNet gateway and how they integrate with the Luci Digital platform.
+	•	Details on LoRaWAN integration and device management.
+	7.	Service_Delivery.md
+	•	Explanation of how services are delivered to clients, including automation workflows, network monitoring, and security protocols.
+	8.	Backup_and_Disaster_Recovery.md
+	•	Strategy for data backups, redundancy, and disaster recovery handled by Data.
+	•	Failover systems to ensure system continuity during disruptions.
+	9.	Password_and_Key_Management.md
+	•	Use of Vault for secure secrets management, replacing 1Password.
+	•	How credentials and API keys are stored and accessed securely.
+	10.	Watermarked_Communication_and_AR_Features.md
+	•	Integration of watermarked communication for verifying authenticity.
+	•	AR features and NFTs for secure digital communication and content verification.
+	11.	Service_Desk_and_Management_Protocols.md
+	•	Integration of the service desk into the Tron node.
+	•	Tokenization and billing management protocols.
+	12.	IoT_Integration_with_Security_and_Identity.md
+	•	Configuration for IoT devices, including security protocols and decentralized identity management.
+	•	Connection with Hedera for tokenization and proof of identity.
+	13.	Mobile_Device_Management.md
+	•	Integration of mobile device management
