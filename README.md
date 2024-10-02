@@ -20,6 +20,7 @@ Core Components:
 
 README Structure
 
+/
 ├── README.md
 ├── CONTRIBUTING.md
 ├── docs/
