@@ -95,5 +95,3 @@ Deployment Summary
 	3.	HiLuciNet: A private LoRaWAN network deployed throughout Alberta, providing long-range connectivity for a wide range of IoT devices.
 	4.	Security: Zero-trust architecture and end-to-end encryption ensure that the system is secure and resilient.
 	5.	AI: Local AI agents optimize network operations, device management, and user interactions in real-time.
-
-This System_Components_and_Deployment.md provides a clear overview of the architecture and deployment strategy for the Luci Digital platform. Each component is designed to scale and adapt to the needs of individuals, families, and businesses, ensuring that Luci Digital remains a comprehensive and innovative solution.
