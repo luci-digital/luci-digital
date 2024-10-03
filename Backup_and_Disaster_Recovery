@@ -1,97 +1,111 @@
-Luci Digital - Backup and Disaster Recovery
+Backup and Disaster Recovery Overview
 
-Overview
+Luci Digital’s platform incorporates a comprehensive backup and disaster recovery plan to ensure that data is preserved, services remain operational, and recovery from failures is swift and seamless. Utilizing the Proxmox Backup Server, Docker containers, and cloud-based services, the platform provides secure, encrypted backups and a scalable disaster recovery framework.
 
-Luci Digital’s Backup and Disaster Recovery protocols ensure that all client data and system configurations are securely backed up and recoverable in the event of hardware failure, data corruption, or other disruptions. The platform uses automated, encrypted backups and robust disaster recovery strategies to protect against data loss and minimize downtime. These protocols are managed primarily by the Data node, which handles backup scheduling, encryption, and restoration procedures.
+Key Components:
 
-This document provides an overview of the backup and disaster recovery processes, the tools used, and the protocols in place to ensure continuous service delivery and data integrity.
+    Proxmox Backup Server: Centralized backup management for VMs and containers.
+    Dockerized Backup Services: Handles file-level and application-level backups for the Luci Digital platform.
+    Cloud-Based Storage: Offsite backups are stored in encrypted cloud storage to ensure data safety in case of physical hardware failures.
+    Disaster Recovery Protocols: Procedures for restoring data and resuming operations in case of a catastrophic failure.
 
-Core Components
+Step 1: Backup Strategy
 
-1. Data Node
+    Proxmox Backup Server (PBS): The Proxmox Backup Server is the central backup solution for all VMs and containers running on Nebula, Tron, and Data. It provides full and incremental backups of VM disks and configurations, ensuring quick recovery.
 
-	•	Role: The Data node is responsible for storing and managing all backup data for the Luci Digital platform. It performs automated backups, ensures data encryption, and handles disaster recovery operations to restore services in case of a failure.
-	•	Core Functions:
-	•	Automated Backups: Data performs scheduled backups of critical client data, system configurations, and AI models.
-	•	Disaster Recovery Protocols: In the event of a system failure, the Data node executes recovery procedures to restore services and minimize downtime.
-	•	Encryption: All backups are encrypted to protect sensitive data from unauthorized access.
+        Install Proxmox Backup Server: Install PBS on a dedicated server or on Data using a Docker container.
 
-2. Proxmox Backup Server
+        bash
 
-	•	Role: Proxmox Backup Server is the tool used to manage backup operations, providing automated scheduling, encryption, and recovery capabilities. It ensures that backups are stored securely and can be restored quickly in case of data loss or failure.
-	•	Core Functions:
-	•	Backup Scheduling: Proxmox Backup Server automates the creation of backups at regular intervals, ensuring that data is always up-to-date.
-	•	Deduplication: Data deduplication reduces storage requirements by identifying and eliminating duplicate data across backups.
-	•	Encryption: All backups are encrypted with strong algorithms (e.g., AES-256) to prevent unauthorized access to sensitive data.
-	•	Disaster Recovery: Proxmox provides tools for efficient data restoration, ensuring minimal disruption to services.
+    sudo apt-get update
+    sudo apt-get install proxmox-backup-server
 
-Backup Processes
+    Configure PBS for VMs and Containers: In the Proxmox management console, configure backup jobs for each VM and container. Ensure that full backups are scheduled weekly, and incremental backups are scheduled daily.
 
-1. Backup Types
+    Backup Scheduling: Backups are scheduled via the Proxmox interface:
+        Full Backups: Weekly (Sundays at 2:00 AM)
+        Incremental Backups: Daily (Midnight)
 
-	•	Full Backups: Periodic full backups are performed on the entire platform, including client data, system configurations, AI models, and other critical information. These backups are stored both locally and in the cloud to ensure redundancy.
-	•	Incremental Backups: Incremental backups capture only the changes made since the last full backup, minimizing storage requirements and speeding up the backup process. Incremental backups are typically performed more frequently to ensure up-to-date data.
-	•	Configuration Backups: Configuration files for the Luci Digital platform are backed up separately to ensure that system settings and AI workflows can be restored quickly if needed.
+    Retention Policy: Define a retention policy that keeps a certain number of full and incremental backups:
+        4 Full Backups
+        14 Incremental Backups
 
-2. Backup Schedules
+File-Level Backups via Docker: In addition to VM and container backups, the platform also performs file-level backups for critical application data, configuration files, and databases.
 
-	•	Daily Incremental Backups: Incremental backups are scheduled daily to capture any changes to client data, device configurations, and system operations.
-	•	Weekly Full Backups: Full backups are performed weekly to create comprehensive snapshots of the entire system, including all client data, service logs, AI models, and configurations.
-	•	Monthly Archival Backups: Monthly archival backups are stored for long-term retention, ensuring that historical data is available if needed for compliance, auditing, or recovery purposes.
+    Dockerized Backup Containers: Backup containers are used to handle specific backup tasks. For example, a container may be configured to backup MySQL databases and store them in the Proxmox Backup Server or in encrypted cloud storage.
 
-3. Backup Storage Locations
+    Backup Volumes: Ensure that application volumes (databases, logs, etc.) are mounted within the Docker containers and included in the backup jobs.
 
-	•	Local Storage: Backups are initially stored locally on the Data node for quick access and recovery.
-	•	Cloud Storage: Redundant copies of backups are stored in a secure cloud environment to ensure that data is available in the event of a local system failure.
-	•	Encryption: All backups, whether local or cloud-based, are encrypted to prevent unauthorized access. Encryption keys are securely managed using Vault.
+    bash
 
-Disaster Recovery Protocols
+    sudo docker run -v /data:/backupdata --name backup-container mybackupimage
 
-1. Failover and Recovery Procedures
+Encrypted Cloud Storage for Offsite Backups: Offsite backups are stored in cloud storage to protect against local hardware failures or disasters. All backups are encrypted using AES-256 encryption before being uploaded.
 
-	•	Failover Protocols: In the event of a failure on the Nebula, Tron, or Data nodes, Luci Digital’s failover protocols automatically redirect traffic and services to redundant systems. This minimizes downtime and ensures that clients can continue accessing services.
-	•	Data Restoration: Backups stored on the Data node and in the cloud are used to restore services quickly. The restoration process includes decrypting and loading backup data, ensuring that all client data, AI models, and system configurations are restored to their most recent state.
-	•	Testing and Validation: Once recovery is complete, the system is thoroughly tested to validate the integrity of the restored data and configurations. This ensures that services are fully operational before being made available to clients.
+    Cloud Storage Provider: Backups are stored in AWS S3 or Google Cloud Storage, ensuring redundancy and geographic distribution.
 
-2. Recovery Time Objective (RTO) and Recovery Point Objective (RPO)
+    Using Rclone for Cloud Backup: Set up Rclone to sync Proxmox backups to cloud storage:
 
-	•	Recovery Time Objective (RTO): Luci Digital’s goal is to restore services as quickly as possible following a failure. The RTO is typically set at less than 1 hour, depending on the scope of the failure.
-	•	Recovery Point Objective (RPO): The RPO defines the acceptable amount of data loss in the event of a failure. Luci Digital’s RPO is minimal, with daily incremental backups ensuring that data loss is limited to 24 hours at most.
+    bash
 
-3. Redundancy and High Availability
+        rclone sync /mnt/proxmox-backups remote:backups --crypt
 
-	•	Redundant Systems: The platform employs redundant systems to ensure high availability. In case of hardware failure, traffic is automatically redirected to backup systems until the issue is resolved.
-	•	High Availability: Luci Digital’s infrastructure is designed for high availability, ensuring that services remain accessible to clients even during maintenance or partial outages.
+Step 2: Disaster Recovery Plan
 
-Data Security
+    Recovery Scenarios: Luci Digital’s disaster recovery plan covers various failure scenarios, such as hardware failure, data corruption, and accidental deletion. The recovery plan ensures minimal downtime and data loss.
 
-1. Backup Encryption
+    Scenario 1: VM Failure
+        In the event of a VM failure (e.g., Nebula VM crash), the affected VM can be restored from the latest backup using the Proxmox Backup Server.
+        Recovery Steps:
+            Access the Proxmox Backup Server console.
+            Select the latest full or incremental backup for the affected VM.
+            Restore the backup to the original or a new VM.
 
-	•	Encryption at Rest: All backups are encrypted using AES-256 or a similar encryption standard to protect data from unauthorized access while stored on the Data node or in the cloud.
-	•	Encryption in Transit: Data transmitted between the Data node and cloud storage is encrypted using SSL/TLS to ensure that it remains secure during transfer.
-	•	Vault Integration: Encryption keys are managed securely through Vault, ensuring that only authorized services and administrators can access the backup data.
+    Scenario 2: Data Corruption
+        If data becomes corrupted within a container or application, a file-level restore can be initiated to recover the affected files or databases.
+        Recovery Steps:
+            Access the Docker container responsible for the corrupted data.
+            Restore the affected files or databases from the backup stored on the Proxmox Backup Server or cloud storage.
 
-2. Access Control and Authorization
+    Scenario 3: Complete System Failure
+        In the event of a complete system failure (e.g., hardware failure of all servers), a full system restore can be initiated by deploying the backup VMs and data from the Proxmox Backup Server and cloud backups.
+        Recovery Steps:
+            Rebuild the physical servers and reinstall Proxmox.
+            Restore VMs and containers from the latest full backups on the Proxmox Backup Server.
+            Restore any remaining data from encrypted cloud storage.
 
-	•	Role-Based Access Control (RBAC): Access to backup data is strictly controlled through role-based access policies. Only authorized personnel can initiate backups, access stored data, or perform recovery operations.
-	•	Audit Logs: All backup and recovery operations are logged and monitored, ensuring that any unauthorized access attempts or anomalies are detected and addressed promptly.
+    Restoration Process: Restoration of VMs and data is handled through the Proxmox Backup Server interface or via the command line for file-level restores.
 
-3. Compliance and Data Retention
+        Restoring a VM: In the Proxmox management console, navigate to the backup section and select the backup to restore. Choose the target node for the restore and monitor the progress.
 
-	•	Regulatory Compliance: Luci Digital adheres to industry standards and regulatory requirements for data protection and retention, ensuring that client data is handled securely and in compliance with applicable laws.
-	•	Retention Policies: Data retention policies are enforced to ensure that backup data is retained for the required period, after which it is securely deleted or archived based on client or regulatory needs.
+        Restoring Application Data: For restoring specific application data (e.g., databases, configuration files), use Docker containers to recover the data from backup volumes.
 
-Testing and Validation
+    Testing and Drills: Periodically test the disaster recovery process to ensure that backups are working as expected and that the recovery process is smooth.
+        Monthly DR Drills: Conduct full disaster recovery drills every month to ensure that staff and systems are prepared for potential disasters.
+        Backup Integrity Checks: Regularly check the integrity of backups to ensure that no data corruption has occurred during the backup process.
 
-1. Regular Backup Testing
+Step 3: Backup Security and Compliance
 
-	•	Backup Testing: Luci Digital regularly tests its backup processes to ensure that data can be restored quickly and without errors. These tests include verifying the integrity of backup files and ensuring that all encryption keys are functioning correctly.
-	•	Simulation of Disaster Scenarios: The platform simulates disaster scenarios to test recovery procedures. These tests ensure that the system can recover from a variety of failure scenarios, such as hardware malfunctions, data corruption, or security breaches.
+    Encryption: All backups are encrypted using AES-256 encryption to ensure data security. Both local and cloud backups are encrypted, preventing unauthorized access to sensitive data.
 
-2. Periodic Review
+        Encrypting Local Backups: Proxmox Backup Server supports encryption natively. Ensure that all backups are encrypted by enabling encryption in the PBS settings.
 
-	•	Backup and Recovery Audits: Periodic audits are conducted to review the effectiveness of the backup and disaster recovery processes. These audits ensure that the system is prepared for any eventuality and that recovery objectives are met.
+        Cloud Backup Encryption: Use Rclone to encrypt backups before they are uploaded to cloud storage. Rclone’s encryption feature ensures that even if cloud storage is compromised, the data remains secure.
 
-Conclusion
+    Compliance: The backup and disaster recovery processes are compliant with industry standards such as ISO 27001 and SOC 2. Regular audits are conducted to ensure compliance with data protection and security standards.
 
-Luci Digital’s Backup and Disaster Recovery protocols provide a secure and reliable solution for protecting client data and ensuring continuous service delivery. Through automated backups, encrypted storage, and robust disaster recovery procedures, the platform minimizes the risk of data loss and ensures that services can be restored quickly in the event of a failure. Regular testing and audits ensure that the system remains resilient and capable of handling disruptions.
+Step 4: Monitoring and Alerts
+
+    Monitoring Backup Status: The status of backups is monitored continuously through Proxmox and Docker monitoring tools. Prometheus and Grafana can be configured to provide real-time metrics on backup success, failure rates, and storage usage.
+
+    Automated Alerts: If a backup fails or storage space runs low, automated alerts are sent to the system administrators via email, SMS, or a centralized alerting system like PagerDuty.
+        Example Alert Configuration:
+
+        yaml
+
+alert:
+  onFailure: true
+  onSuccess: false
+  notify:
+    - email: admin@lucidigital.net
+    - sms: +1234567890
