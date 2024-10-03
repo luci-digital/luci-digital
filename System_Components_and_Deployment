@@ -1,77 +1,92 @@
-Luci Digital - System Components and Deployment
+System Components Overview
 
-Overview
+Luci Digital’s infrastructure relies on three primary virtual machines (VMs) that serve as the backbone for AI workflows, networking, and storage. These VMs are deployed using Proxmox, configured via Vagrant and Terraform, and run various Docker containers to support the platform's needs.
 
-The Luci Digital platform is built on a decentralized architecture consisting of three primary nodes: Nebula, Tron, and Data. These nodes form the core infrastructure for AI workflows, secure networking, and data management. This document provides detailed deployment instructions and an overview of the system components.
+Core VMs:
 
-Core Components
+    Nebula: The host of Lucia AI, responsible for AI workflows and task management.
+    Tron: Handles security protocols and network traffic routing, including Traefik for load balancing.
+    Data: Manages backup services, data storage, and replication for disaster recovery.
 
-1. Nebula
+Deployment Process
 
-	•	Role: Nebula is the primary orchestrator of the Luci Digital platform. It hosts Lucia AI, manages the cloud infrastructure, and enforces security protocols. Nebula is responsible for orchestrating workflows across all nodes, managing secrets via Vault, and integrating with the Hedera DID for decentralized identity management.
-	•	Deployment Steps:
-	1.	Install Docker on Nebula’s host machine.
-	2.	Deploy Lucia AI in a Docker container, ensuring that it has access to the necessary data streams and computational resources.
-	3.	Install Vault for secrets management and configure it to securely store and retrieve credentials, API keys, and tokens.
-	4.	Configure CloudStack to manage the VMs and cloud orchestration.
-	5.	Setup Security Protocols, including MFA and decentralized identity (DID) using the Hedera network.
-	6.	SSL/TLS Certificates: Deploy Traefik for SSL termination and manage certificates for secure communication between nodes.
+    Provisioning VMs:
 
-2. Tron
+        Using Vagrant and Terraform: Vagrant is used to create the base images for the VMs. Terraform is employed to handle infrastructure provisioning, ensuring each VM is configured consistently. Follow these steps:
 
-	•	Role: Tron acts as the primary entry point for the Luci Digital platform. It is responsible for routing traffic between nodes and managing the system’s service desk and tokenization workflows. Tron handles all external requests and routes them securely to Nebula or Data using Traefik as a reverse proxy.
-	•	Deployment Steps:
-	1.	Install Docker on Tron’s host machine.
-	2.	Deploy Traefik as a dynamic reverse proxy to route traffic between nodes.
-	3.	Set up Service Desk VMs such as Fortcx for handling customer requests and Nelix for billing and Hedera tokenization.
-	4.	Configure Vault to manage secrets securely.
-	5.	Deploy Security Tools to monitor traffic and ensure compliance with security policies.
-	6.	Integrate AI Models: Ensure Tron is equipped to process real-time AI tasks and respond to incoming requests.
+            Initialize Vagrant in your Project Directory:
 
-3. Data
+            bash
 
-	•	Role: Data handles all data storage, backups, and disaster recovery for the platform. It is responsible for ensuring the integrity and security of the platform’s data and facilitating rapid recovery in case of system failures. The Data node manages all backup operations using Proxmox Backup Server and ensures data is securely encrypted both at rest and in transit.
-	•	Deployment Steps:
-	1.	Install Docker or Proxmox on Data’s host machine.
-	2.	Deploy Proxmox Backup Server to manage backups and secure storage for critical data.
-	3.	Set up Disaster Recovery VMs, such as Safetynet, to ensure rapid failover and data restoration in the event of system disruptions.
-	4.	Configure Vault for secure key and secret management.
-	5.	Enable Encrypted Backups: Ensure all data backups are encrypted and securely stored in case of an emergency.
-	6.	Test Failover and Recovery Protocols to ensure data integrity and minimal downtime during failures.
+vagrant init bento/ubuntu-20.04
 
-Networking Setup
+Configure the VMs in Vagrantfile: In the Vagrantfile, define the VMs like so:
 
-1. Secure Traffic Routing
+ruby
 
-	•	Traefik is deployed on Tron to manage traffic routing between Nebula, Tron, and Data. All traffic is encrypted using SSL/TLS certificates, with secure communication managed through Traefik’s reverse proxy capabilities.
+Vagrant.configure("2") do |config|
+  config.vm.define "nebula" do |nebula|
+    nebula.vm.box = "bento/ubuntu-20.04"
+    nebula.vm.provider "virtualbox" do |vb|
+      vb.memory = "4096"
+      vb.cpus = 2
+    end
+  end
 
-2. Secure Communication
+  config.vm.define "tron" do |tron|
+    tron.vm.box = "bento/ubuntu-20.04"
+    tron.vm.provider "virtualbox" do |vb|
+      vb.memory = "4096"
+      vb.cpus = 2
+    end
+  end
 
-	•	All communication between nodes is encrypted using end-to-end encryption. Vault ensures that secrets, credentials, and keys are securely shared between nodes, minimizing the risk of exposure.
+  config.vm.define "data" do |data|
+    data.vm.box = "bento/ubuntu-20.04"
+    data.vm.provider "virtualbox" do |vb|
+      vb.memory = "4096"
+      vb.cpus = 2
+    end
+  end
+end
 
-3. Network Segmentation
+Run Vagrant: Once the Vagrantfile is configured, use the following command to bring up the VMs:
 
-	•	Network segmentation ensures that traffic between client-facing services, AI workflows, and data storage is isolated and secured, minimizing the risk of unauthorized access.
+bash
 
-Backup and Recovery
+        vagrant up
 
-1. Regular Backup Schedules
+        Deploying with Terraform: Terraform handles provisioning beyond the Vagrantfile, automating infrastructure across your environment. Ensure your main.tf file includes the correct providers and configurations for Proxmox and CloudInit.
 
-	•	The Data node runs regular backups using Proxmox Backup Server. Backups are encrypted and stored both locally and in the cloud, ensuring redundancy.
+Setting up Docker:
 
-2. Disaster Recovery
+    Install Docker on each VM once they are up and running:
 
-	•	Safetynet and Disaster Recovery VMs are configured on the Data node to ensure that data can be restored quickly in the event of a failure.
+    bash
 
-Automation and Orchestration
+sudo apt-get update
+sudo apt-get install -y docker.io
 
-	•	Lucia AI, hosted on Nebula, automates workflows, including real-time processing, resource management, and predictive maintenance across devices and networks.
-	•	Tron manages automation for external requests, ensuring that service desk and tokenization systems operate efficiently.
+Enable Docker to run at startup:
 
-System Maintenance
+bash
 
-	•	All components of the Luci Digital platform are monitored in real time, with automated alerts triggered for maintenance and troubleshooting. Nebula manages the overall security and health of the system, while Tron processes incoming requests and Data ensures that data is securely stored and recoverable.
+    sudo systemctl enable docker
+    sudo systemctl start docker
 
-Conclusion
+Running Key Services in Docker:
 
-Luci Digital’s decentralized architecture is designed for security, scalability, and efficiency. The core components—Nebula, Tron, and Data—each play a crucial role in orchestrating AI workflows, managing client services, and ensuring the integrity and security of the platform. Following the deployment steps outlined in this document will ensure a stable and secure environment for running Luci Digital’s services.
+    Nebula will run Lucia AI services in Docker containers. Lucia will have various containerized microservices (e.g., a model server, task manager, etc.).
+    Tron will run Traefik in Docker for network security and traffic routing:
+
+    bash
+
+        sudo docker run -d -p 80:80 -p 443:443 traefik
+
+        Data will run Proxmox Backup and other related data services in Docker containers.
+
+Key Configuration Files
+
+    Vagrantfile: Handles the VM provisioning.
+    Terraform Configuration: Ensures consistent infrastructure as code deployment.
+    CloudInit Scripts: Automate VM setup during the boot process.
