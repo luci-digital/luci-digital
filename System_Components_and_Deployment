@@ -22,8 +22,6 @@ vagrant init bento/ubuntu-20.04
 
 Configure the VMs in Vagrantfile: In the Vagrantfile, define the VMs like so:
 
-ruby
-
 Vagrant.configure("2") do |config|
   config.vm.define "nebula" do |nebula|
     nebula.vm.box = "bento/ubuntu-20.04"
