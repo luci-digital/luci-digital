@@ -1,0 +1,101 @@
+  /iot/device/{deviceId}/status:
+    get:
+      operationId: getDeviceStatus
+      summary: Retrieve IoT device status from Nebula
+      description: |
+        Queries the Nebula backend to retrieve the real-time status of an IoT device in Daryl's ecosystem.
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the IoT device to query
+      responses:
+        '200':
+          description: IoT device status retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deviceName:
+                    type: string
+                    description: Name of the IoT device
+                  status:
+                    type: string
+                    description: Current status of the device (e.g., "on", "off", "active")
+                  lastChecked:
+                    type: string
+                    format: date-time
+                    description: Last time the device status was checked
+
+  /iot/device/control:
+    post:
+      operationId: controlDevice
+      summary: Control an IoT device
+      description: |
+        Allows Lucia to send control commands to IoT devices connected to Nebula.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceId:
+                  type: string
+                  description: ID of the IoT device to be controlled
+                command:
+                  type: string
+                  description: Command to be executed (e.g., "turn on", "turn off")
+                scheduledTime:
+                  type: string
+                  format: date-time
+                  description: Optional scheduled time for executing the command
+      responses:
+        '200':
+          description: Device control command sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Whether the command was successful
+                  executionStatus:
+                    type: string
+                    description: Status of command execution (e.g., "executed", "pending")
+
+  /iot/device/data/{deviceId}:
+    get:
+      operationId: getDeviceData
+      summary: Retrieve historical data from an IoT device
+      description: |
+        Retrieves historical data collected by an IoT device, enabling analytics and predictive maintenance.
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The ID of the IoT device
+        - name: fromDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            description: Start date for data retrieval
+        - name: toDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            description: End date for data retrieval
+      responses:
+        '200':
+          description: Device data retrieved successfully
+          con

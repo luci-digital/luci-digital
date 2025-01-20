@@ -1,0 +1,193 @@
+
+paths:
+  /chat:
+    post:
+      operationId: chatInteraction
+      summary: Handle user input via chat for AI interaction
+      description: |
+        This endpoint processes user input and interacts with Lucia's AI models to generate responses.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  description: ID of the user interacting with Lucia
+                message:
+                  type: string
+                  description: The user’s input message
+                sessionId:
+                  type: string
+                  description: Optional session identifier for tracking conversation context
+      responses:
+        '200':
+          description: AI response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: string
+                    description: AI-generated response from Lucia
+                  confidenceScore:
+                    type: number
+                    format: float
+                    description: Confidence level of the AI response
+
+  /hedera/identity/create:
+    post:
+      operationId: createUserWallet
+      summary: Create a new Hedera account for decentralized identity
+      description: |
+        Generates a new Hedera account for a user in the Nebula system, managed by Lucia.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  description: The user's ID within Lucia’s system
+                initialBalance:
+                  type: number
+                  description: Initial balance for the Hedera account (default: 0 HBAR)
+                  example: 0
+                accountName:
+                  type: string
+                  description: Optional name for the Hedera account
+      responses:
+        '201':
+          description: Hedera Account created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accountId:
+                    type: string
+                    description: Generated Hedera account ID
+
+  /hedera/identity/verify:
+    post:
+      operationId: verifyIdentity
+      summary: Verify user identity using Hedera’s decentralized ledger
+      description: |
+        Validates the user’s identity credentials by querying the Hedera blockchain.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  description: ID of the user to be verified
+                idHash:
+                  type: string
+                  description: The hashed identity credentials
+                verificationMethod:
+                  type: string
+                  description: The method used for verification (e.g., "email", "phone", "biometric")
+      responses:
+        '200':
+          description: Identity verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isVerified:
+                    type: boolean
+                    description: Verification status of the user
+                  verificationTimestamp:
+                    type: string
+                    format: date-time
+                    description: The timestamp when the verification was completed
+
+  /hedera/transactions/send:
+    post:
+      operationId: sendPayment
+      summary: Send HBAR payment between Hedera accounts
+      description: |
+        Executes a payment transaction between two Hedera accounts.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                senderAccountId:
+                  type: string
+                  description: The Hedera account ID of the sender
+                receiverAccountId:
+                  type: string
+                  description: The Hedera account ID of the receiver
+                amount:
+                  type: number
+                  description: Amount of HBAR to be transferred
+                  example: 10
+                transactionMemo:
+                  type: string
+                  description: Optional memo for the transaction
+      responses:
+        '200':
+          description: Payment transaction successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transactionStatus:
+                    type: string
+                    description: Status of the HBAR payment transaction
+                  transactionId:
+                    type: string
+                    description: Unique ID for tracking the transaction
+
+  /hedera/token/create:
+    post:
+      operationId: createToken
+      summary: Create a custom token on the Hedera network
+      description: |
+        Mints a new token for use within the Nebula platform, allowing for token-based access control or transactions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tokenName:
+                  type: string
+                  description: The name of the token
+                  example: LuciToken
+                tokenSymbol:
+                  type: string
+                  description: The token’s symbol
+                  example: LUC
+                initialSupply:
+                  type: number
+                  description: Initial supply of the minted tokens
+                  example: 1000
+                tokenType:
+                  type: string
+                  description: Type of token (e.g., "fungible", "non-fungible")
+      responses:
+        '201':
+          description: Token created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tokenId:
+                    type: string
+                    description: The unique ID of the created token

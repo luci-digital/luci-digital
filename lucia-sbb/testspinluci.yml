@@ -1,0 +1,94 @@
+version: '3'
+services:
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+  
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: lucia_admin
+      POSTGRES_PASSWORD: securepassword
+      POSTGRES_DB: lucidigital
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  mariadb:
+    image: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: securepassword
+      MYSQL_DATABASE: lucidigital
+      MYSQL_USER: lucia_admin
+      MYSQL_PASSWORD: securepassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+  mongodb:
+    image: mongo
+    environment:
+      MONGO_INITDB_DATABASE: lucidigital
+      MONGO_INITDB_ROOT_USERNAME: lucia_admin
+      MONGO_INITDB_ROOT_PASSWORD: securepassword
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  manageengine:
+    image: manageengine/servicedesk
+    container_name: servicedesk
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./ManageEngine_SericeDeskPlus_MSP_64bit.bin:/opt/ManageEngine_SericeDeskPlus_MSP_64bit.bin
+    entrypoint: /opt/ManageEngine_SericeDeskPlus_MSP_64bit.bin --mode unattended
+
+  pytorch-ai:
+    image: pytorch/pytorch
+    container_name: pytorch-ai
+    ports:
+      - "8888:8888"  # For Jupyter Notebook if needed
+    command: jupyter notebook --ip 0.0.0.0 --no-browser --allow-root
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    volumes:
+      - ./data:/workspace/data
+    working_dir: /workspace
+
+  smart_box:
+    image: luci/smartbox
+    container_name: smart_box
+    ports:
+      - "8081:8081"  # Smart Box monitoring service
+    environment:
+      - HEDERA_API_KEY=0xc3b9c24d0eba06a112fc9a3575eaca8dd3d7269522096e16539d94f83702feda
+      - SMART_BOX_ID=smart_box_001
+    volumes:
+      - ./smartbox_data:/var/lib/smartbox
+    entrypoint: /opt/smartbox/start.sh
+  
+  hedera-sdk:
+    image: hashgraph/hedera-sdk-js
+    container_name: hedera_sdk
+    environment:
+      HEDERA_NETWORK: testnet
+    ports:
+      - "3030:3030"  # For any Hedera-based API calls
+
+volumes:
+  postgres_data:
+  mariadb_data:
+  mongodb_data:
+  smartbox_data:

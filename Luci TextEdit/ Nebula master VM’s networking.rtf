@@ -1,0 +1,74 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2820
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 #cloud-config\
+package_update: true\
+package_upgrade: true\
+\
+# Install essential packages\
+packages:\
+  - net-tools\
+  - curl\
+  - git\
+  - docker.io\
+  - docker-compose\
+  - ufw\
+\
+# Run commands to install other services and configurations\
+runcmd:\
+  - echo "Starting initial setup..."\
+  \
+  # Network configuration using netplan\
+  - echo "Configuring network using netplan..."\
+  - |\
+    cat <<EOF > /etc/netplan/01-netcfg.yaml\
+    network:\
+      version: 2\
+      renderer: networkd\
+      ethernets:\
+        eth0:\
+          dhcp4: false\
+          addresses: [192.168.1.100/24]  # Adjust static IP here\
+          gateway4: 192.168.1.1          # Replace with your network gateway\
+          nameservers:\
+            addresses: [8.8.8.8]        # Use your preferred DNS server\
+    EOF\
+\
+  # Apply network configuration\
+  - netplan apply\
+  \
+  # Install Docker dependencies and set up a basic environment\
+  - echo "Setting up Docker..."\
+  - systemctl enable docker\
+  - systemctl start docker\
+  - curl -L "https://github.com/docker/compose/releases/download/v2.0.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose\
+  - chmod +x /usr/local/bin/docker-compose\
+  \
+  # Firewall configuration with UFW\
+  - echo "Configuring UFW firewall..."\
+  - ufw default deny incoming\
+  - ufw default allow outgoing\
+  - ufw allow ssh\
+  - ufw enable\
+\
+  # Additional system and software setups\
+  - echo "Starting additional setups..."\
+  \
+  # Install and configure 1Password for secrets management\
+  - echo "Installing 1Password CLI..."\
+  - curl -sS https://downloads.1password.com/linux/debian/amd64/stable/1password-cli-latest.deb -o 1password-cli.deb\
+  - dpkg -i 1password-cli.deb\
+  \
+  # Install and configure Apache Cloudstack\
+  - echo "Installing Apache Cloudstack..."\
+  - apt-get install -y openjdk-8-jdk\
+  - wget http://download.cloudstack.org/releases/4.15.1.0/apache-cloudstack-4.15.1.0-src.tar.bz2\
+  - tar -xvf apache-cloudstack-4.15.1.0-src.tar.bz2\
+  - cd apache-cloudstack-4.15.1.0-src && ./install.sh\
+\
+# Final message upon completion\
+final_message: "Nebula setup and network configuration complete!"}

@@ -1,0 +1,2 @@
+echo "ASSEMBLYAI_API_KEY=8461a3c5f2fc4b6e94667ab63b5e53b7" > .env
+

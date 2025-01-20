@@ -1,0 +1,264 @@
+openapi: 3.1.0
+info:
+  title: ChatRTX API
+  description: |
+    The ChatRTX API allows developers to integrate NVIDIA's TensorRT-LLM based inference engine, leveraging AI models like LLaMa, ChatGLM, Whisper, and CLIP. This API supports text, voice, and image inputs with streaming/non-streaming inference and Retrieval-Augmented Generation (RAG) capabilities.
+  version: 1.0.0
+servers:
+  - url: https://api.chatrtx.com/v1
+    description: Main API server for ChatRTX
+
+paths:
+  /inference/text:
+    post:
+      operationId: textQuery
+      summary: Submit a text-based query to the ChatRTX AI engine.
+      description: |
+        Submits a text prompt to the ChatRTX inference engine and receives a response based on models like LLaMa or ChatGLM. Supports both single-shot and conversational query contexts.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+                  description: The text prompt to be processed by the AI model.
+                model:
+                  type: string
+                  description: |
+                    Specify the model to use for inference, such as LLaMa 2 or ChatGLM. Defaults to the best available model.
+                context:
+                  type: array
+                  items:
+                    type: string
+                  description: |
+                    Optional: Provide a conversation history to maintain context for dialogue-based queries.
+      responses:
+        '200':
+          description: Successful text response from AI.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: string
+                    description: The generated AI response.
+
+  /inference/voice:
+    post:
+      operationId: voiceQuery
+      summary: Submit a voice query to the ChatRTX engine.
+      description: |
+        Allows users to submit a voice input that gets converted to text via the Whisper model and processed by an AI model. The system returns both the transcribed text and the AI response.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                audioFile:
+                  type: string
+                  format: binary
+                  description: The voice input file to be processed (e.g., .wav or .mp3).
+                model:
+                  type: string
+                  description: Optional: Specify the AI model to process the query.
+      responses:
+        '200':
+          description: Successful voice-to-text and AI response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transcript:
+                    type: string
+                    description: Transcribed text from the voice input.
+                  response:
+                    type: string
+                    description: The AI-generated response.
+
+  /inference/image:
+    post:
+      operationId: imageProcessing
+      summary: Process an image using AI.
+      description: |
+        Processes an image using models like CLIP for image-to-text retrieval. The API allows querying image contents or retrieving metadata based on user input.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                imageFile:
+                  type: string
+                  format: binary
+                  description: Image file to be processed (e.g., .jpg, .png).
+                query:
+                  type: string
+                  description: Text query to match against the image (e.g., "find all objects in the image").
+      responses:
+        '200':
+          description: Image processed successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  description:
+                    type: string
+                    description: Textual description or metadata retrieved from the image.
+                  objects:
+                    type: array
+                    items:
+                      type: string
+                    description: List of objects identified in the image.
+
+  /inference/streaming:
+    post:
+      operationId: streamingInference
+      summary: Submit a streaming query for real-time AI processing.
+      description: |
+        This endpoint allows streaming inference, returning partial results in real-time as the model processes the input.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+                  description: The text prompt to be processed.
+                stream:
+                  type: boolean
+                  description: Set to true to enable streaming responses.
+      responses:
+        '200':
+          description: Successful streaming response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseStream:
+                    type: array
+                    items:
+                      type: string
+                    description: Partial responses as the model processes the input.
+
+  /inference/rag:
+    post:
+      operationId: ragQuery
+      summary: Perform a RAG (Retrieval-Augmented Generation) query.
+      description: |
+        Submit a query to the RAG pipeline, which retrieves relevant documents or data from external sources (e.g., databases, files) and uses this information to generate a contextually aware response.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+                  description: The text prompt to be processed by the AI model with external data retrieval.
+                dataSources:
+                  type: array
+                  items:
+                    type: string
+                  description: The external data sources to use for RAG (e.g., file directories, document collections).
+      responses:
+        '200':
+          description: Successful RAG response with contextual retrieval.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: string
+                    description: The AI-generated response augmented by retrieved data.
+                  retrievedData:
+                    type: array
+                    items:
+                      type: string
+                    description: The external data that was retrieved to support the response.
+
+  /inference/models:
+    get:
+      operationId: listModels
+      summary: List available AI models.
+      description: |
+        Retrieve a list of AI models currently available on the ChatRTX platform, such as LLaMa, ChatGLM, Whisper, and CLIP.
+      responses:
+        '200':
+          description: List of available models.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  models:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        modelName:
+                          type: string
+                          description: The name of the AI model.
+                        modelType:
+                          type: string
+                          description: The type of the model (e.g., text, voice, image).
+                        description:
+                          type: string
+                          description: Brief description of the model's capabilities.
+
+  /troubleshooting/logs:
+    get:
+      operationId: getLogs
+      summary: Retrieve system logs for troubleshooting.
+      description: |
+        Retrieve logs for the system, including error logs, inference engine activities, and API requests.
+      responses:
+        '200':
+          description: Logs retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  logs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        timestamp:
+                          type: string
+                          description: The timestamp of the log entry.
+                        message:
+                          type: string
+                          description: The log message.
+
+  /health:
+    get:
+      operationId: checkHealth
+      summary: Health check for the ChatRTX API.
+      description: |
+        Perform a health check to verify that the ChatRTX API and its underlying services are operational.
+      responses:
+        '200':
+          description: Service is operational.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: "OK" if the service is healthy.

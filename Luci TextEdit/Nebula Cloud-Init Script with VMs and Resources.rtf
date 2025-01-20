@@ -1,0 +1,118 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2820
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 #cloud-config\
+package_update: true\
+package_upgrade: true\
+\
+# Install essential packages\
+packages:\
+  - net-tools\
+  - curl\
+  - git\
+  - docker.io\
+  - docker-compose\
+  - ufw\
+  - openjdk-8-jdk\
+  - qemu-kvm\
+  - libvirt-daemon-system\
+  - libvirt-clients\
+  - bridge-utils\
+  - virt-manager\
+\
+# Install Optional Packages\
+optional_packages:\
+  - python3-venv\
+  - python3-pip\
+  - mongodb\
+  - nginx\
+  - nodejs\
+  - npm\
+\
+# Run commands to install and configure all dependencies\
+runcmd:\
+  # Setup Networking with Netplan\
+  - echo "Configuring network using netplan..."\
+  - |\
+    cat <<EOF > /etc/netplan/01-netcfg.yaml\
+    network:\
+      version: 2\
+      renderer: networkd\
+      ethernets:\
+        eth0:\
+          dhcp4: false\
+          addresses: [192.168.1.100/24]  # Set static IP for Nebula\
+          gateway4: 192.168.1.1          # Set Gateway\
+          nameservers:\
+            addresses: [8.8.8.8]         # Set DNS\
+    EOF\
+  - netplan apply\
+  \
+  # Install Docker, Docker Compose, and setup for VMs\
+  - echo "Installing Docker and Docker Compose..."\
+  - curl -L "https://github.com/docker/compose/releases/download/v2.0.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose\
+  - chmod +x /usr/local/bin/docker-compose\
+  \
+  # Install Hedera SDK and configure Testnet VM\
+  - echo "Installing Hedera Testnet dependencies..."\
+  - apt-get install -y openjdk-11-jdk maven\
+  - git clone https://github.com/hashgraph/hedera-services.git\
+  - cd hedera-services && mvn install\
+  \
+  # Create VMs for smart box testing and web3 services\
+  - echo "Creating VMs for testing..."\
+  \
+  # VM 1: Smart Box Testing VM\
+  - virt-install --name smartbox-vm --ram 4096 --vcpus 2 --disk size=20 --os-variant ubuntu20.04 --network network=default --graphics none --console pty,target_type=serial --location 'http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/' --extra-args 'console=ttyS0,115200n8 serial'\
+\
+  # VM 2: Mini Smart Box VM\
+  - virt-install --name mini-smartbox-vm --ram 2048 --vcpus 1 --disk size=10 --os-variant ubuntu20.04 --network network=default --graphics none --console pty,target_type=serial --location 'http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/' --extra-args 'console=ttyS0,115200n8 serial'\
+  \
+  # VM 3: Web3 Smart Box\
+  - virt-install --name web3-smartbox-vm --ram 4096 --vcpus 2 --disk size=30 --os-variant ubuntu20.04 --network network=default --graphics none --console pty,target_type=serial --location 'http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/' --extra-args 'console=ttyS0,115200n8 serial'\
+  \
+  # VM 4: Hedera Testnet Node VM\
+  - virt-install --name hedera-testnet-vm --ram 8192 --vcpus 4 --disk size=50 --os-variant ubuntu20.04 --network network=default --graphics none --console pty,target_type=serial --location 'http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/' --extra-args 'console=ttyS0,115200n8 serial'\
+\
+  # Install Apache CloudStack for cloud orchestration\
+  - echo "Installing Apache CloudStack..."\
+  - wget http://download.cloudstack.org/releases/4.15.1.0/apache-cloudstack-4.15.1.0-src.tar.bz2\
+  - tar -xvf apache-cloudstack-4.15.1.0-src.tar.bz2\
+  - cd apache-cloudstack-4.15.1.0-src && ./install.sh\
+  \
+  # Install 1Password CLI for secrets management\
+  - echo "Installing 1Password CLI..."\
+  - curl -sS https://downloads.1password.com/linux/debian/amd64/stable/1password-cli-latest.deb -o 1password-cli.deb\
+  - dpkg -i 1password-cli.deb\
+  \
+  # Install Prometheus for monitoring\
+  - echo "Installing Prometheus..."\
+  - docker run -d --name prometheus -p 9090:9090 prom/prometheus\
+\
+  # Install Grafana for visualization\
+  - echo "Installing Grafana..."\
+  - docker run -d --name grafana -p 3000:3000 grafana/grafana\
+  \
+  # Install additional dependencies for smart box monitoring\
+  - echo "Installing smart box dependencies..."\
+  - npm install -g @chirpstack/chirpstack-application-server @chirpstack/chirpstack-gateway-bridge\
+\
+  # Start and configure all services\
+  - echo "Starting and configuring all services..."\
+  - systemctl enable docker\
+  - systemctl start docker\
+\
+  # Configure firewall (UFW)\
+  - ufw allow 22\
+  - ufw allow 80\
+  - ufw allow 443\
+  - ufw allow 3000/tcp    # Grafana\
+  - ufw allow 9090/tcp    # Prometheus\
+  - ufw enable\
+\
+# Final message\
+final_message: "Nebula setup complete with Smart Box, Hedera Testnet, and all necessary components!"}

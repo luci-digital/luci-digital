@@ -1,0 +1,101 @@
+openapi: 3.1.0
+info:
+  title: Lucia's Proton and Hedera Integration
+  description: |
+    This API integrates Proton services (Mail, Drive, VPN, Pass) with Hedera for decentralized identity and secure transactions. GPT actions can manage emails, files, passwords, VPN, and secure blockchain-based tasks like payments and identity verification.
+  version: 1.0.0
+servers:
+  - url: https://api.luci-digital.com/v1
+    description: Main Production Server
+
+paths:
+  /iot/devices/{deviceId}/status:
+    get:
+      operationId: getDeviceStatus
+      summary: Get the status of an IoT device.
+      description: Fetch the current status (on/off, activity, etc.) of a specific IoT device.
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The ID of the IoT device.
+      responses:
+        '200':
+          description: Successful device status retrieval
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: The current status of the IoT device.
+
+  /iot/devices/{deviceId}/control:
+    post:
+      operationId: controlDevice
+      summary: Control an IoT device.
+      description: Sends a command to an IoT device (e.g., turn on/off, adjust settings).
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The ID of the IoT device.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  description: The action to perform (e.g., "turn on", "turn off").
+      responses:
+        '200':
+          description: Successful device control
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Whether the command was successful.
+
+  /iot/devices/register:
+    post:
+      operationId: registerDevice
+      summary: Register a new IoT device.
+      description: Add a new IoT device to the system, linking it to a user or environment.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceName:
+                  type: string
+                  description: The name of the device.
+                deviceType:
+                  type: string
+                  description: Type of the IoT device (e.g., thermostat, camera).
+                userId:
+                  type: string
+                  description: The user to whom the device is assigned.
+      responses:
+        '201':
+          description: Device registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deviceId:
+                    type: string
+                    description: The ID of the registered device.

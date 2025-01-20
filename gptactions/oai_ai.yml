@@ -1,0 +1,122 @@
+openapi: 3.1.0
+info:
+  title: Lucia's Proton and Hedera Integration
+  description: |
+    This API integrates Proton services (Mail, Drive, VPN, Pass) with Hedera for decentralized identity and secure transactions. GPT actions can manage emails, files, passwords, VPN, and secure blockchain-based tasks like payments and identity verification.
+  version: 1.0.0
+servers:
+  - url: https://api.luci-digital.com/v1
+    description: Main Production Server
+    
+paths:
+  /ai/text-completion:
+    post:
+      operationId: generateTextCompletion
+      summary: Generate a text completion using an AI model.
+      description: Uses a text generation model (e.g., GPT) to generate a response based on the given prompt.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+                  description: Text prompt for the AI model
+      responses:
+        '200':
+          description: Successful text completion
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  completion:
+                    type: string
+                    description: The AI-generated text completion.
+  
+  /ai/image-generation:
+    post:
+      operationId: generateImage
+      summary: Generate an image from a text prompt using AI.
+      description: Uses a model like DALL-E to create an image from a text description.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+                  description: Text description for generating the image.
+      responses:
+        '200':
+          description: Image generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  imageUrl:
+                    type: string
+                    description: URL of the generated image.
+
+  /ai/tts:
+    post:
+      operationId: textToSpeech
+      summary: Convert text to speech.
+      description: Converts text into spoken words using text-to-speech models.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  description: Text to convert into speech.
+      responses:
+        '200':
+          description: Audio generated successfully
+          content:
+            audio/mpeg:
+              schema:
+                type: string
+                format: binary
+
+  /ai/function-call:
+    post:
+      operationId: callFunction
+      summary: Call external functions based on AI interpretation
+      description: |
+        Allows Lucia to interpret user input and call appropriate functions to perform tasks.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  description: The user's ID
+                message:
+                  type: string
+                  description: The user's input message
+      responses:
+        '200':
+          description: Function called successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  functionName:
+                    type: string
+                    description: The name of the function called
+                  result:
+                    type: string
+                    description: Result returned by the function

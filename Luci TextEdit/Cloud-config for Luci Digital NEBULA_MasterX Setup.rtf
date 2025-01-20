@@ -1,0 +1,138 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2820
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 #!/bin/bash\
+\
+# NEBULA_MasterX Setup Script\
+\
+echo "Starting Luci Digital NEBULA_MasterX setup process"\
+\
+# Set hostname and FQDN\
+hostnamectl set-hostname nebula-master\
+echo "nebula.lucidigital.io" > /etc/hostname\
+\
+# Update and upgrade packages\
+apt-get update && apt-get upgrade -y\
+\
+# Install packages\
+apt-get install -y python3-pip docker.io docker-compose certbot qrencode nginx nodejs npm curl prometheus python3-certbot-nginx git build-essential nvidia-driver-525 nvidia-container-toolkit mongodb-org postgresql mariadb-server openjdk-11-jdk ufw traefik qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils virt-manager filecoin nvidia-cuda-toolkit openssh-server wget unzip fail2ban unattended-upgrades\
+\
+# Create user and add to groups\
+useradd -m -s /bin/bash lucidigital_admin\
+usermod -aG sudo,docker lucidigital_admin\
+echo "lucidigital_admin ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/lucidigital_admin\
+\
+# Set up SSH key (replace with actual key)\
+mkdir -p /home/lucidigital_admin/.ssh\
+echo "ssh-rsa AAA...your_ssh_public_key_here" > /home/lucidigital_admin/.ssh/authorized_keys\
+chmod 700 /home/lucidigital_admin/.ssh\
+chmod 600 /home/lucidigital_admin/.ssh/authorized_keys\
+chown -R lucidigital_admin:lucidigital_admin /home/lucidigital_admin/.ssh\
+\
+# Create directories and scripts\
+mkdir -p /opt/luci-digital/scripts /opt/luci-digital/logs /var/www/html\
+\
+cat << EOF > /opt/luci-digital/scripts/generate_qr.sh\
+#!/bin/bash\
+qrencode -o /var/www/html/qr_code.png "\\$1"\
+EOF\
+chmod 755 /opt/luci-digital/scripts/generate_qr.sh\
+\
+cat << EOF > /opt/luci-digital/scripts/webhook_handler.js\
+// Add your webhook handling logic here\
+EOF\
+chmod 755 /opt/luci-digital/scripts/webhook_handler.js\
+\
+# NVIDIA setup\
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)\
+curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | apt-key add -\
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | tee /etc/apt/sources.list.d/nvidia-docker.list\
+apt-get update && apt-get install -y nvidia-container-toolkit nvidia-container-runtime\
+\
+# GPU passthrough setup\
+echo "blacklist nouveau" >> /etc/modprobe.d/blacklist.conf\
+echo "vfio-pci.ids=10de:1db6,10de:1db6" >> /etc/default/grub\
+update-grub && update-initramfs -u\
+\
+# Docker setup\
+systemctl enable docker\
+systemctl start docker\
+docker network create web\
+\
+# NVIDIA ChatRTX setup\
+wget https://us.download.nvidia.com/RTX/ChatWithRTX_Installer_8_25.zip -O /opt/nvidia/ChatWithRTX_Installer_8_25.zip\
+unzip /opt/nvidia/ChatWithRTX_Installer_8_25.zip -d /opt/nvidia/\
+git clone https://github.com/NVIDIA/ChatRTX.git /opt/nvidia/ChatRTX\
+cd /opt/nvidia/ChatRTX && ./install.sh\
+\
+# Prometheus setup\
+docker run -d --name prometheus -p 9090:9090 -v /root/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus\
+\
+# Nginx and QR code setup\
+touch /var/www/html/qr_code.png\
+systemctl enable nginx && systemctl start nginx\
+bash /opt/luci-digital/scripts/generate_qr.sh "http://<server-ip>:8000/webhook"\
+node /opt/luci-digital/scripts/webhook_handler.js\
+\
+# Certbot setup\
+certbot --nginx -d nebula.lucidigital.io -d monitoring.lucidigital.io\
+\
+# AI/ML environment setup\
+pip3 install torch torchvision spacy nltk transformers sentence-transformers\
+python3 -m spacy download en_core_web_sm\
+pip3 install nvidia-pyindex nvidia-tensorflow tensorboard\
+\
+# Hedera SDK setup\
+npm install --global yarn\
+git clone https://github.com/hashgraph/hedera-sdk-js.git\
+cd hedera-sdk-js && yarn install && yarn build\
+\
+# Database setup\
+systemctl start mongodb\
+echo 'use lucidigital; db.createUser(\{user:"lucia_admin", pwd:"securepassword", roles:[\{role:"readWrite", db:"lucidigital"\}]\});' | mongo\
+sudo -u postgres psql -c "CREATE DATABASE lucidigital; CREATE USER lucia_admin WITH PASSWORD 'securepassword'; GRANT ALL PRIVILEGES ON DATABASE lucidigital TO lucia_admin;"\
+mysql -e "CREATE DATABASE lucidigital; CREATE USER 'lucia_admin'@'localhost' IDENTIFIED BY 'securepassword'; GRANT ALL PRIVILEGES ON lucidigital.* TO 'lucia_admin'@'localhost'; FLUSH PRIVILEGES;"\
+\
+# UFW firewall setup\
+ufw allow 22/tcp\
+ufw allow 80/tcp\
+ufw allow 443/tcp\
+ufw allow 9090/tcp\
+ufw allow 3000/tcp\
+ufw --force enable\
+\
+# Security enhancements\
+sed -i 's/PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config\
+systemctl restart sshd\
+systemctl enable fail2ban && systemctl start fail2ban\
+\
+# Performance optimizations\
+fallocate -l 4G /swapfile\
+chmod 600 /swapfile\
+mkswap /swapfile\
+swapon /swapfile\
+echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab\
+\
+# Monitoring and logging\
+apt-get install -y logrotate\
+docker run -d --name grafana -p 3000:3000 grafana/grafana\
+\
+# Backup strategy\
+apt-get install -y restic\
+restic init --repo /path/to/backup/repository\
+echo "0 2 * * * restic backup /important/data --repo /path/to/backup/repository" | crontab -\
+\
+# Version control\
+echo "NEBULA_MasterX Configuration v1.1" >> /etc/nebula_version\
+\
+# Final checks\
+nvidia-smi\
+docker ps\
+systemctl status mongodb postgresql mariadb-server nginx\
+\
+echo "Luci Digital NEBULA_MasterX v1.1 setup complete with enhanced security, performance optimizations, and improved monitoring."\
+}

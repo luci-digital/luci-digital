@@ -1,0 +1,971 @@
+openapi: 3.1.0
+info:
+  title: Lucia Digital API - Hedera Hashgraph Integration
+  description: |
+    This API integrates Hedera Hashgraph functionalities into the Lucia Digital platform, enabling users to interact with the Hedera network for account management, cryptocurrency transactions, smart contract interactions, and consensus services.
+  version: 1.9.0
+servers:
+  - url: https://api.luci-digital.com/v1
+    description: Main Production Server
+  - url: https://staging.luci-digital.com
+    description: Staging Server
+
+paths:
+  /hedera/account/create:
+    post:
+      operationId: createHederaAccount
+      summary: Create a new Hedera account
+      description: Creates a new Hedera account with an optional initial hbar balance.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccountRequest'
+      responses:
+        '201':
+          description: Account created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateAccountResponse'
+        '400':
+          description: Bad request (e.g., invalid parameters)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hedera/account/{accountId}/balance:
+    get:
+      operationId: getHederaAccountBalance
+      summary: Get the hbar balance of an account
+      description: Retrieves the hbar balance of a specified Hedera account.
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The account ID to check (e.g., "0.0.12345")
+      responses:
+        '200':
+          description: Balance retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountBalanceResponse'
+        '400':
+          description: Bad request (e.g., invalid account ID)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hedera/account/transfer:
+    post:
+      operationId: transferHbars
+      summary: Transfer hbars between accounts
+      description: Transfers hbars from one Hedera account to another.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferHbarsRequest'
+      responses:
+        '200':
+          description: Hbars transferred successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferHbarsResponse'
+        '400':
+          description: Bad request (e.g., insufficient balance)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hedera/contract/{contractId}/call:
+    post:
+      operationId: executeSmartContractFunction
+      summary: Execute a function on a smart contract
+      description: Calls a specified function on a deployed smart contract.
+      parameters:
+        - name: contractId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Smart contract ID (e.g., "0.0.67890")
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecuteContractFunctionRequest'
+      responses:
+        '200':
+          description: Function executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecuteContractFunctionResponse'
+        '400':
+          description: Bad request (e.g., invalid parameters)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hedera/contract/{contractId}:
+    get:
+      operationId: getSmartContractInfo
+      summary: Get information about a smart contract
+      description: Retrieves details of a specified smart contract.
+      parameters:
+        - name: contractId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Smart contract ID (e.g., "0.0.67890")
+      responses:
+        '200':
+          description: Contract information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmartContractInfoResponse'
+        '404':
+          description: Contract not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hedera/token/create:
+    post:
+      operationId: createHederaToken
+      summary: Create a new token on Hedera
+      description: Creates a new token with specified parameters.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTokenRequest'
+      responses:
+        '201':
+          description: Token created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateTokenResponse'
+        '400':
+          description: Bad request (e.g., invalid parameters)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hedera/token/transfer:
+    post:
+      operationId: transferHederaTokens
+      summary: Transfer tokens between accounts
+      description: Transfers tokens from one account to another.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferTokensRequest'
+      responses:
+        '200':
+          description: Tokens transferred successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferTokensResponse'
+        '400':
+          description: Bad request (e.g., insufficient balance)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hedera/token/associate:
+    post:
+      operationId: associateTokenWithAccount
+      summary: Associate a token with an account
+      description: Associates a specified token with an account.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssociateTokenRequest'
+      responses:
+        '200':
+          description: Token associated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssociateTokenResponse'
+        '400':
+          description: Bad request (e.g., invalid account or token ID)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hedera/token/dissociate:
+    post:
+      operationId: dissociateTokenFromAccount
+      summary: Dissociate a token from an account
+      description: Dissociates a specified token from an account.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DissociateTokenRequest'
+      responses:
+        '200':
+          description: Token dissociated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DissociateTokenResponse'
+        '400':
+          description: Bad request (e.g., token not associated)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hedera/consensus/topic/create:
+    post:
+      operationId: createConsensusTopic
+      summary: Create a new consensus topic
+      description: Creates a new topic for the Hedera Consensus Service.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateConsensusTopicRequest'
+      responses:
+        '201':
+          description: Consensus topic created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateConsensusTopicResponse'
+        '400':
+          description: Bad request (e.g., invalid parameters)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hedera/consensus/topic/{topicId}/message:
+    post:
+      operationId: submitConsensusMessage
+      summary: Submit a message to a consensus topic
+      description: Publishes a message to a specified consensus topic.
+      parameters:
+        - name: topicId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Consensus topic ID (e.g., "0.0.112233")
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitConsensusMessageRequest'
+      responses:
+        '200':
+          description: Message submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmitConsensusMessageResponse'
+        '400':
+          description: Bad request (e.g., invalid topic ID)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hedera/consensus/topic/{topicId}:
+    get:
+      operationId: getConsensusTopicInfo
+      summary: Get information about a consensus topic
+      description: Retrieves details of a specified consensus topic.
+      parameters:
+        - name: topicId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Consensus topic ID (e.g., "0.0.112233")
+      responses:
+        '200':
+          description: Topic information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsensusTopicInfoResponse'
+        '404':
+          description: Topic not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hedera/file/upload:
+    post:
+      operationId: uploadFileToHedera
+      summary: Upload a file to Hedera File Service
+      description: Uploads a file to the Hedera File Service.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UploadFileRequest'
+      responses:
+        '201':
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadFileResponse'
+        '400':
+          description: Bad request (e.g., invalid file format)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hedera/file/{fileId}:
+    get:
+      operationId: getFileFromHedera
+      summary: Retrieve a file from Hedera File Service
+      description: Downloads a file from the Hedera File Service.
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: File ID (e.g., "0.0.445566")
+      responses:
+        '200':
+          description: File retrieved successfully
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: File not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      operationId: deleteFileFromHedera
+      summary: Delete a file from Hedera File Service
+      description: Deletes a specified file from the Hedera File Service.
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: File ID (e.g., "0.0.445566")
+      responses:
+        '204':
+          description: File deleted successfully
+        '404':
+          description: File not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hedera/transaction/{transactionId}/receipt:
+    get:
+      operationId: getTransactionReceipt
+      summary: Get the receipt of a transaction
+      description: Retrieves the receipt of a specified transaction.
+      parameters:
+        - name: transactionId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Transaction ID (e.g., "0.0.12345@1632345678")
+      responses:
+        '200':
+          description: Transaction receipt retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionReceiptResponse'
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hedera/transaction/{transactionId}/record:
+    get:
+      operationId: getTransactionRecord
+      summary: Get the record of a transaction
+      description: Retrieves the record of a specified transaction.
+      parameters:
+        - name: transactionId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Transaction ID (e.g., "0.0.12345@1632345678")
+      responses:
+        '200':
+          description: Transaction record retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionRecordResponse'
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hedera/network/status:
+    get:
+      operationId: checkHederaNetworkStatus
+      summary: Check the status of the Hedera network
+      description: Retrieves the current status of the Hedera network.
+      responses:
+        '200':
+          description: Network status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkStatusResponse'
+
+  /hedera/account/{accountId}/transactions:
+    get:
+      operationId: listAccountTransactions
+      summary: List transactions for an account
+      description: Retrieves a list of transactions associated with a specified account.
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Account ID (e.g., "0.0.12345")
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of transactions to retrieve
+      responses:
+        '200':
+          description: Transactions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountTransactionsResponse'
+        '400':
+          description: Bad request (e.g., invalid account ID)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hedera/account/{accountId}/keys/update:
+    post:
+      operationId: updateAccountKeys
+      summary: Update keys associated with an account
+      description: Updates the cryptographic keys associated with a specified account.
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Account ID (e.g., "0.0.12345")
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAccountKeysRequest'
+      responses:
+        '200':
+          description: Account keys updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateAccountKeysResponse'
+        '400':
+          description: Bad request (e.g., invalid keys)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    CreateAccountRequest:
+      type: object
+      properties:
+        initialBalance:
+          type: number
+          format: float
+          description: Initial hbar balance for the account
+        publicKey:
+          type: string
+          description: Public key to associate with the account (optional)
+      required:
+        - initialBalance
+
+    CreateAccountResponse:
+      type: object
+      properties:
+        accountId:
+          type: string
+          description: The newly created account ID
+        publicKey:
+          type: string
+          description: Public key associated with the account
+        privateKey:
+          type: string
+          description: Private key for the account (securely provided)
+        status:
+          type: string
+          description: Status of the account creation
+
+    AccountBalanceResponse:
+      type: object
+      properties:
+        accountId:
+          type: string
+          description: The account ID queried
+        balance:
+          type: number
+          format: float
+          description: Hbar balance of the account
+
+    TransferHbarsRequest:
+      type: object
+      properties:
+        fromAccountId:
+          type: string
+          description: Sender's account ID
+        toAccountId:
+          type: string
+          description: Recipient's account ID
+        amount:
+          type: number
+          format: float
+          description: Amount of hbars to transfer
+        memo:
+          type: string
+          description: Transaction memo (optional)
+      required:
+        - fromAccountId
+        - toAccountId
+        - amount
+
+    TransferHbarsResponse:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          description: ID of the transfer transaction
+        status:
+          type: string
+          description: Status of the transfer
+
+    ExecuteContractFunctionRequest:
+      type: object
+      properties:
+        functionName:
+          type: string
+          description: Name of the contract function to execute
+        parameters:
+          type: object
+          additionalProperties:
+            type: string
+          description: Key-value pairs of function parameters
+        gas:
+          type: integer
+          description: Gas limit for the transaction (optional)
+      required:
+        - functionName
+
+    ExecuteContractFunctionResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          description: Result returned by the contract function
+        transactionId:
+          type: string
+          description: ID of the contract call transaction
+        status:
+          type: string
+          description: Status of the execution
+
+    SmartContractInfoResponse:
+      type: object
+      properties:
+        contractId:
+          type: string
+          description: Smart contract ID
+        adminKey:
+          type: string
+          description: Admin key of the contract
+        bytecodeSize:
+          type: integer
+          description: Size of the contract bytecode
+        expirationTime:
+          type: string
+          format: date-time
+          description: Contract expiration time
+        autoRenewPeriod:
+          type: integer
+          description: Auto-renewal period in seconds
+
+    CreateTokenRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Token name
+        symbol:
+          type: string
+          description: Token symbol
+        decimals:
+          type: integer
+          description: Number of decimal places
+        initialSupply:
+          type: number
+          format: float
+          description: Initial token supply
+        treasuryAccountId:
+          type: string
+          description: Account ID holding the initial supply
+      required:
+        - name
+        - symbol
+        - decimals
+        - initialSupply
+        - treasuryAccountId
+
+    CreateTokenResponse:
+      type: object
+      properties:
+        tokenId:
+          type: string
+          description: The newly created token ID
+        status:
+          type: string
+          description: Status of the token creation
+
+    TransferTokensRequest:
+      type: object
+      properties:
+        tokenId:
+          type: string
+          description: Token ID
+        fromAccountId:
+          type: string
+          description: Sender's account ID
+        toAccountId:
+          type: string
+          description: Recipient's account ID
+        amount:
+          type: number
+          format: float
+          description: Amount of tokens to transfer
+        memo:
+          type: string
+          description: Transaction memo (optional)
+      required:
+        - tokenId
+        - fromAccountId
+        - toAccountId
+        - amount
+
+    TransferTokensResponse:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          description: ID of the token transfer transaction
+        status:
+          type: string
+          description: Status of the transfer
+
+    AssociateTokenRequest:
+      type: object
+      properties:
+        accountId:
+          type: string
+          description: Account ID to associate the token with
+        tokenId:
+          type: string
+          description: Token ID to associate
+      required:
+        - accountId
+        - tokenId
+
+    AssociateTokenResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Status of the token association
+
+    DissociateTokenRequest:
+      type: object
+      properties:
+        accountId:
+          type: string
+          description: Account ID to dissociate the token from
+        tokenId:
+          type: string
+          description: Token ID to dissociate
+      required:
+        - accountId
+        - tokenId
+
+    DissociateTokenResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Status of the token dissociation
+
+    CreateConsensusTopicRequest:
+      type: object
+      properties:
+        memo:
+          type: string
+          description: Memo for the consensus topic (optional)
+
+    CreateConsensusTopicResponse:
+      type: object
+      properties:
+        topicId:
+          type: string
+          description: The newly created consensus topic ID
+        status:
+          type: string
+          description: Status of the topic creation
+
+    SubmitConsensusMessageRequest:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Message content to submit
+      required:
+        - message
+
+    SubmitConsensusMessageResponse:
+      type: object
+      properties:
+        sequenceNumber:
+          type: integer
+          description: Sequence number of the message in the topic
+        transactionId:
+          type: string
+          description: ID of the message submission transaction
+        status:
+          type: string
+          description: Status of the message submission
+
+    ConsensusTopicInfoResponse:
+      type: object
+      properties:
+        topicId:
+          type: string
+          description: Consensus topic ID
+        memo:
+          type: string
+          description: Memo of the topic
+        sequenceNumber:
+          type: integer
+          description: Current sequence number
+        expirationTime:
+          type: string
+          format: date-time
+          description: Topic expiration time
+        adminKey:
+          type: string
+          description: Admin key of the topic
+        submitKey:
+          type: string
+          description: Submit key required to post messages
+
+    UploadFileRequest:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+          description: File to upload
+        keys:
+          type: array
+          items:
+            type: string
+          description: List of keys that can modify the file (optional)
+      required:
+        - file
+
+    UploadFileResponse:
+      type: object
+      properties:
+        fileId:
+          type: string
+          description: The newly created file ID
+        status:
+          type: string
+          description: Status of the file upload
+
+    TransactionReceiptResponse:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          description: Transaction ID
+        status:
+          type: string
+          description: Status of the transaction
+        accountId:
+          type: string
+          description: Account ID generated (if applicable)
+        fileId:
+          type: string
+          description: File ID generated (if applicable)
+        contractId:
+          type: string
+          description: Contract ID generated (if applicable)
+        topicId:
+          type: string
+          description: Topic ID generated (if applicable)
+
+    TransactionRecordResponse:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          description: Transaction ID
+        receipt:
+          $ref: '#/components/schemas/TransactionReceiptResponse'
+        consensusTimestamp:
+          type: string
+          format: date-time
+          description: Consensus timestamp of the transaction
+        transactionFee:
+          type: number
+          format: float
+          description: Transaction fee charged
+        memo:
+          type: string
+          description: Memo of the transaction
+
+    NetworkStatusResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Current status of the Hedera network
+        timestamp:
+          type: string
+          format: date-time
+          description: Time the status was retrieved
+        nodeStatus:
+          type: array
+          items:
+            type: object
+            properties:
+              nodeId:
+                type: string
+                description: Node ID
+              status:
+                type: string
+                description: Status of the node
+
+    AccountTransactionsResponse:
+      type: object
+      properties:
+        accountId:
+          type: string
+          description: Account ID
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionRecordResponse'
+
+    UpdateAccountKeysRequest:
+      type: object
+      properties:
+        newKeys:
+          type: array
+          items:
+            type: string
+          description: List of new public keys
+      required:
+        - newKeys
+
+    UpdateAccountKeysResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Status of the key update
+        transactionId:
+          type: string
+          description: Transaction ID of the key update
+
+    ErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: string
+          description: Application-specific error code
+        message:
+          type: string
+          description: Error message explaining the issue
+        details:
+          type: object
+          description: Additional details about the error (optional)
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - BearerAuth: []

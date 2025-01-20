@@ -1,0 +1,109 @@
+openapi: 3.1.0
+info:
+  title: Lucia-AI Library Integration API
+  description: |
+    This API allows developers to integrate various community-maintained OpenAI libraries into their applications through Lucia-AI.
+  version: 1.0.0
+servers:
+  - url: https://api.luci-digital.com/v1
+    description: Main API Server
+
+paths:
+  /libraries/{language}:
+    get:
+      operationId: getLibrariesByLanguage
+      summary: Get OpenAI community libraries for a specific programming language.
+      description: |
+        Retrieves a list of supported OpenAI libraries for the specified programming language, allowing developers to choose the best fit for their projects.
+      parameters:
+        - name: language
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [CSharp, C++, Clojure, Crystal, Dart, Delphi, Elixir, Go, Java, Julia, Kotlin, NodeJS, PHP, Python, R, Ruby, Rust, Scala, Swift, Unity, UnrealEngine]
+          description: The programming language to retrieve libraries for.
+      responses:
+        '200':
+          description: A list of available libraries for the specified language
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    libraryName:
+                      type: string
+                      description: The name of the library
+                    repositoryUrl:
+                      type: string
+                      description: URL to the library repository
+                    description:
+                      type: string
+                      description: Brief description of the library
+
+  /libraries/install:
+    post:
+      operationId: installLibrary
+      summary: Install a community-maintained OpenAI library for use with Lucia-AI.
+      description: |
+        This endpoint installs the selected library in the developer's environment for seamless integration with Lucia-AI.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                libraryName:
+                  type: string
+                  description: The name of the library to install
+                language:
+                  type: string
+                  description: The programming language of the library
+                version:
+                  type: string
+                  description: The version of the library to install (optional)
+      responses:
+        '201':
+          description: Library installed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the installation
+
+  /libraries/update:
+    post:
+      operationId: updateLibrary
+      summary: Update a previously installed OpenAI community library.
+      description: |
+        This endpoint allows developers to update an existing OpenAI community library in their environment.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                libraryName:
+                  type: string
+                  description: The name of the library to update
+                language:
+                  type: string
+                  description: The programming language of the library
+      responses:
+        '200':
+          description: Library updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the update

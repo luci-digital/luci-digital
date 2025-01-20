@@ -1,0 +1,46 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2761
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 HelveticaNeue;\f1\fnil\fcharset0 HelveticaNeue-Bold;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww16440\viewh14560\viewkind0
+\deftab560
+\pard\pardeftab560\slleading20\partightenfactor0
+
+\f0\fs26 \cf0 # Create the directory structure\
+mkdir -p nebula-project/\{config,src/modules,scripts,docker/environment,tests/integration,docs\}\
+\
+# Create necessary files\
+touch nebula-project/.gitignore\
+touch nebula-project/README.md\
+touch nebula-project/LICENSE\
+touch nebula-project/config/\{nebula-config.yaml,network-config.json,docker-compose.nebula.yml\}\
+touch nebula-project/src/\{main.py,helpers.py\}\
+touch nebula-project/src/modules/\{__init__.py,nebula_module.py\}\
+touch nebula-project/scripts/\{setup.sh,run_nebula.sh\}\
+touch nebula-project/docker/\{Dockerfile,docker-compose.yml\}\
+touch nebula-project/docker/environment/dev.env\
+touch nebula-project/tests/\{test_main.py,test_helpers.py\}\
+touch nebula-project/tests/integration/test_integration.py\
+touch nebula-project/docs/\{nebula-setup.md,api-reference.md,troubleshooting.md\}\
+\
+# Initialize the repository\
+cd nebula-project\
+git init\
+\
+# Add files to the repository\
+git add .\
+\
+# Commit the initial structure\
+git commit -m "Initial commit with project structure"\
+\
+# Set the default branch to 'main'\
+git branch -M main\
+\
+# Add remote GitHub repository\
+git remote add origin https://github.com/luci-digital/nebula-project.git\
+\
+# Authenticate using your token and push the changes\
+# Replace 'your-token' with your actual GitHub token\
+git push https://
+\f1\b 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
+\f0\b0 @github.com/luci-digital/nebula-project.git --all}

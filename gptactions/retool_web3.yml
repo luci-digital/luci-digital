@@ -1,0 +1,97 @@
+openapi: 3.1.0
+info:
+  title: Retool-Luci Digital Integration API
+  description: API for managing Luci Digital’s AI, IoT, and decentralized services via Retool.
+  version: 1.1.0
+servers:
+  - url: https://api.luci-digital.com/v1
+    description: Main API for Luci Digital
+
+paths:
+  /hedera/identity:
+    post:
+      operationId: issueIdentity
+      summary: Issue decentralized identity via Hedera.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  description: Unique ID of the user
+                credentials:
+                  type: string
+                  description: Encrypted identity credentials
+      responses:
+        '201':
+          description: Identity issued successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  identityId:
+                    type: string
+                    description: Hedera-based decentralized identity ID
+
+  /iot/devices:
+    get:
+      operationId: listIoTDevices
+      summary: List all connected IoT devices in Nebula.
+      responses:
+        '200':
+          description: A list of IoT devices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    deviceId:
+                      type: string
+                      description: Unique device ID
+                    name:
+                      type: string
+                      description: Device name
+                    status:
+                      type: string
+                      description: Device status (e.g., online, offline)
+                    type:
+                      type: string
+                      description: Device type (e.g., thermostat, lock, camera)
+
+  /tron/payment:
+    post:
+      operationId: processTokenPayment
+      summary: Handle token transactions using Tron.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                senderAccountId:
+                  type: string
+                  description: Tron account ID of the sender
+                receiverAccountId:
+                  type: string
+                  description: Tron account ID of the receiver
+                amount:
+                  type: number
+                  description: Amount of tokens to transfer
+      responses:
+        '200':
+          description: Payment processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transactionId:
+                    type: string
+                    description: Unique ID of the Tron transaction

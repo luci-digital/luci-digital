@@ -1,0 +1,216 @@
+openapi: 3.1.0
+info:
+  title: Lucia's Proton and Hedera Integration
+  description: |
+    This API integrates Proton services (Mail, Drive, VPN, Pass) with Hedera for decentralized identity and secure transactions. GPT actions can manage emails, files, passwords, VPN, and secure blockchain-based tasks like payments and identity verification.
+  version: 1.0.0
+servers:
+  - url: https://api.luci-digital.com/v1
+    description: Main Production Server
+
+
+paths:
+  /blockchain/identity/create:
+    post:
+      operationId: createUserWallet
+      summary: Create a new user wallet on the blockchain.
+      description: Generate a new blockchain wallet (e.g., for Hedera) that will be used for transactions or identity management.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  description: User ID for whom the wallet is being created.
+      responses:
+        '201':
+          description: Wallet created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  walletId:
+                    type: string
+                    description: The unique blockchain wallet ID.
+
+  /blockchain/transaction/send:
+    post:
+      operationId: sendTransaction
+      summary: Send a blockchain transaction.
+      description: Sends cryptocurrency from one blockchain wallet to another.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                senderWalletId:
+                  type: string
+                  description: The ID of the sender's blockchain wallet.
+                receiverWalletId:
+                  type: string
+                  description: The ID of the receiver's blockchain wallet.
+                amount:
+                  type: number
+                  description: The amount to transfer.
+      responses:
+        '200':
+          description: Transaction successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transactionId:
+                    type: string
+                    description: The unique ID of the completed transaction.
+
+  /blockchain/smart-contract/deploy:
+    post:
+      operationId: deploySmartContract
+      summary: Deploy a new smart contract on the blockchain.
+      description: Deploys a smart contract for use in decentralized applications, such as identity verification or transaction automation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contractCode:
+                  type: string
+                  description: The smart contract code (in Solidity, for example).
+      responses:
+        '201':
+          description: Smart contract deployed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  contractId:
+                    type: string
+                    description: The unique ID of the deployed smart contract.
+
+  /integration/google-drive/upload:
+    post:
+      operationId: uploadToGoogleDrive
+      summary: Upload files to Google Drive
+      description: |
+        Allows Lucia to upload files to the user's Google Drive account.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  description: The user's ID
+                accessToken:
+                  type: string
+                  description: OAuth2 access token for Google Drive
+                file:
+                  type: string
+                  format: binary
+                  description: The file to upload
+      responses:
+        '200':
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fileId:
+                    type: string
+                    description: The ID of the uploaded file on Google Drive
+
+  /vision/analyze-image:
+    post:
+      operationId: analyzeImage
+      summary: Analyze an image using AI
+      description: |
+        Uses GPT-4 Vision capabilities to analyze and describe images.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  description: The user's ID
+                imageFile:
+                  type: string
+                  format: binary
+                  description: The image file uploaded by the user
+      responses:
+        '200':
+          description: Image analyzed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  description:
+                    type: string
+                    description: AI-generated description of the image
+                  tags:
+                    type: array
+                    items:
+                      type: string
+                    description: Tags associated with the image content
+
+  /batch/process:
+    post:
+      operationId: batchProcess
+      summary: Process batch requests
+      description: |
+        Allows for batch processing of multiple requests simultaneously.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tasks:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      taskType:
+                        type: string
+                        description: The type of task (e.g., "transcription", "imageAnalysis")
+                      data:
+                        type: object
+                        description: Data required for the task
+      responses:
+        '200':
+          description: Batch processing initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  batchId:
+                    type: string
+                    description: ID of the batch process
+                  status:
+                    type: string
+                    description: Current status of the batch process
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

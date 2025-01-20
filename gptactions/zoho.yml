@@ -1,0 +1,634 @@
+openapi: 3.1.0
+info:
+  title: Zoho SDK API
+  description: |
+    This API allows developers to integrate Zoho CRM, Zoho Sign, and Zoho Finance SDKs into their applications for automating customer management, document signing, and financial operations. Includes OAuth authentication, CRM record management, document signing, and subscription management functionalities.
+  version: 1.1.0
+servers:
+  - url: https://api.zoho.com/v1
+    description: Main Zoho API Server
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://accounts.zoho.com/oauth/v2/auth
+          tokenUrl: https://accounts.zoho.com/oauth/v2/token
+          scopes:
+            crm: Access Zoho CRM data
+            finance: Access Zoho Finance data
+            sign: Access Zoho Sign
+
+  schemas:
+    RecordResponse:
+      type: object
+      properties:
+        recordId:
+          type: string
+          description: The unique identifier of the record.
+        status:
+          type: string
+          description: Status of the request (e.g., success, error).
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: Error code.
+        message:
+          type: string
+          description: Error message.
+
+security:
+  - OAuth2: []
+
+paths:
+  # ------------------- Zoho CRM SDK -------------------
+  /crm/oauth/token:
+    post:
+      operationId: generateOAuthToken
+      summary: Generate OAuth token
+      description: Generate an OAuth token required for authenticating Zoho CRM API requests.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                clientId:
+                  type: string
+                clientSecret:
+                  type: string
+                grantType:
+                  type: string
+                  description: The grant type (authorization_code, refresh_token).
+                code:
+                  type: string
+                  description: Authorization code or refresh token.
+      responses:
+        '200':
+          description: OAuth token generated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+        '400':
+          description: Bad request or invalid credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /crm/records/{module}:
+    get:
+      operationId: getRecords
+      summary: Fetch records from a CRM module
+      description: Retrieve records from the specified Zoho CRM module, such as Leads, Contacts, or Deals.
+      parameters:
+        - name: module
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The CRM module to fetch records from (e.g., Leads, Contacts).
+        - name: filter
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Filter criteria for narrowing down the records.
+      responses:
+        '200':
+          description: List of records retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  records:
+                    type: array
+                    items:
+                      type: object
+        '404':
+          description: Module not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /crm/records/{module}:
+    post:
+      operationId: createRecord
+      summary: Create a new record in a CRM module
+      description: Create a new record in a specified Zoho CRM module like Leads, Contacts, or Deals.
+      parameters:
+        - name: module
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The CRM module where the record should be created.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  description: The data for the new record.
+      responses:
+        '201':
+          description: Record created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordResponse'
+        '400':
+          description: Invalid input data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /crm/modules:
+    get:
+      operationId: listModules
+      summary: List available CRM modules
+      description: Retrieve all available modules in Zoho CRM, such as Leads, Contacts, Deals, etc.
+      responses:
+        '200':
+          description: List of modules retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  modules:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: The name of the CRM module.
+
+  /crm/attachments/{recordId}:
+    post:
+      operationId: uploadAttachment
+      summary: Upload an attachment to a CRM record
+      description: Upload a file as an attachment to a specific CRM record.
+      parameters:
+        - name: recordId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The ID of the record to which the file should be attached.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The file to upload.
+      responses:
+        '200':
+          description: File uploaded successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  attachmentId:
+                    type: string
+                    description: The ID of the uploaded attachment.
+        '400':
+          description: Invalid file or record ID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ------------------- Zoho Sign SDK -------------------
+  /sign/document/upload:
+    post:
+      operationId: uploadDocument
+      summary: Upload a document for e-signature
+      description: Upload a document to Zoho Sign for initiating an e-signature workflow.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The document to upload.
+      responses:
+        '201':
+          description: Document uploaded successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documentId:
+                    type: string
+                    description: The ID of the uploaded document.
+        '400':
+          description: Bad request, invalid file format.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /sign/signers:
+    post:
+      operationId: addSigners
+      summary: Add signers to a document
+      description: Attach one or more signers to a document for an e-signature process.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                documentId:
+                  type: string
+                  description: The ID of the document to be signed.
+                signers:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: Name of the signer.
+                      email:
+                        type: string
+                        description: Email address of the signer.
+      responses:
+        '200':
+          description: Signers added successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  signers:
+                    type: array
+                    items:
+                      type: object
+
+  /sign/document/status/{documentId}:
+    get:
+      operationId: getSigningStatus
+      summary: Retrieve document signing status
+      description: Fetch the current signing status for a specific document.
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The ID of the document to check signing status for.
+      responses:
+        '200':
+          description: Signing status retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Signing status of the document.
+        '404':
+          description: Document not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ------------------- Zoho Finance SDK (Books, Subscriptions) -------------------
+  /finance/customers:
+    post:
+      operationId: createCustomer
+      summary: Create a customer profile in Zoho Books
+      description: Create a new customer profile in Zoho Books for billing and invoicing.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                currency:
+                  type: string
+                  description: The currency for transactions (e.g., USD).
+           responses:
+        '201':
+          description: Customer profile created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customerId:
+                    type: string
+                    description: The unique identifier for the newly created customer.
+        '400':
+          description: Invalid input data provided.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /finance/invoices:
+    post:
+      operationId: createInvoice
+      summary: Create an invoice for a customer
+      description: |
+        Create a new invoice for a specified customer in Zoho Books, including line items, taxes, and discounts.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                customerId:
+                  type: string
+                  description: The ID of the customer being billed.
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      description:
+                        type: string
+                        description: Description of the line item.
+                      quantity:
+                        type: number
+                        description: Number of units for the item.
+                      rate:
+                        type: number
+                        description: Price per unit.
+                tax:
+                  type: number
+                  description: Applicable tax rate.
+                discount:
+                  type: number
+                  description: Discount applied to the invoice.
+      responses:
+        '201':
+          description: Invoice created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invoiceId:
+                    type: string
+                    description: The unique ID of the created invoice.
+        '400':
+          description: Invalid input data provided.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /finance/invoices/{invoiceId}:
+    get:
+      operationId: getInvoice
+      summary: Retrieve details of a specific invoice
+      description: |
+        Fetch the details of a particular invoice, including line items, totals, taxes, and payment status.
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The ID of the invoice to retrieve.
+      responses:
+        '200':
+          description: Invoice details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invoiceId:
+                    type: string
+                  customerId:
+                    type: string
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        description:
+                          type: string
+                        quantity:
+                          type: number
+                        rate:
+                          type: number
+                  total:
+                    type: number
+                    description: Total amount for the invoice, including tax and discount.
+                  status:
+                    type: string
+                    description: The payment status of the invoice (e.g., Paid, Unpaid).
+        '404':
+          description: Invoice not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /finance/invoices/{invoiceId}/payments:
+    post:
+      operationId: recordPayment
+      summary: Record a payment for an invoice
+      description: |
+        Record a payment made for a specific invoice, updating the invoice status accordingly in Zoho Books.
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The ID of the invoice being paid.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                paymentDate:
+                  type: string
+                  format: date
+                  description: The date when the payment was made.
+                amount:
+                  type: number
+                  description: The amount paid.
+                method:
+                  type: string
+                  description: Payment method (e.g., Credit Card, Bank Transfer).
+      responses:
+        '200':
+          description: Payment recorded successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  paymentId:
+                    type: string
+                    description: The unique ID of the recorded payment.
+        '400':
+          description: Invalid payment data provided.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /finance/subscriptions:
+    post:
+      operationId: createSubscription
+      summary: Create a subscription plan in Zoho Subscriptions
+      description: |
+        Create a new subscription plan for recurring billing in Zoho Subscriptions, including pricing details and billing intervals.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                planName:
+                  type: string
+                  description: The name of the subscription plan.
+                price:
+                  type: number
+                  description: The subscription price per billing interval.
+                interval:
+                  type: string
+                  description: The billing interval (e.g., monthly, yearly).
+      responses:
+        '201':
+          description: Subscription plan created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscriptionId:
+                    type: string
+                    description: The unique ID of the created subscription plan.
+        '400':
+          description: Invalid input data provided.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /finance/subscriptions/{subscriptionId}:
+    get:
+      operationId: getSubscriptionDetails
+      summary: Retrieve details of a subscription plan
+      description: |
+        Fetch details of a specific subscription plan, including pricing, billing frequency, and current subscribers.
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The ID of the subscription plan to retrieve.
+      responses:
+        '200':
+          description: Subscription details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscriptionId:
+                    type: string
+                  planName:
+                    type: string
+                  price:
+                    type: number
+                  interval:
+                    type: string
+                  subscribers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        customerId:
+                          type: string
+                        status:
+                          type: string
+        '404':
+          description: Subscription plan not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /finance/subscriptions/{subscriptionId}:
+    delete:
+      operationId: cancelSubscription
+      summary: Cancel a subscription plan
+      description: |
+        Cancel a specific subscription plan in Zoho Subscriptions, stopping further billing cycles for subscribers.
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The ID of the subscription plan to cancel.
+      responses:
+        '200':
+          description: Subscription plan canceled successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscriptionId:
+                    type: string
+                    description: The ID of the canceled subscription plan.
+        '404':
+          description: Subscription plan not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'

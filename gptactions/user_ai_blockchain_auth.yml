@@ -1,0 +1,328 @@
+ /user/profile:
+    get:
+      operationId: getUserProfile
+      summary: Retrieve user profile information
+      description: |
+        Retrieves the profile information of a user within Lucia’s system.
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+            description: The ID of the user
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: string
+                    description: The user's ID
+                  name:
+                    type: string
+                    description: The user's name
+                  email:
+                    type: string
+                    description: The user's email address
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: The timestamp when the user profile was created
+
+    put:
+      operationId: updateUserProfile
+      summary: Update user profile information
+      description: |
+        Updates the profile information of a user within Lucia’s system.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  description: The user's ID
+                name:
+                  type: string
+                  description: The user's name
+                email:
+                  type: string
+                  description: The user's email address
+      responses:
+        '200':
+          description: User profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Whether the update was successful
+
+  /user/delete:
+    delete:
+      operationId: deleteUserProfile
+      summary: Delete a user profile
+      description: |
+        Deletes a user profile from Lucia’s system.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  description: The user's ID to be deleted
+      responses:
+        '200':
+          description: User profile deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Whether the deletion was successful
+
+  /analytics/user-interactions:
+    get:
+      operationId: getUserInteractions
+      summary: Retrieve user interaction analytics
+      description: |
+        Retrieves analytics data on user interactions with Lucia.
+      parameters:
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: string
+            description: The ID of the user (optional)
+        - name: fromDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            description: Start date for the analytics data
+        - name: toDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            description: End date for the analytics data
+      responses:
+        '200':
+          description: User interaction analytics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  interactions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        userId:
+                          type: string
+                          description: The user's ID
+                        interactionType:
+                          type: string
+                          description: Type of interaction (e.g., "chat", "transaction")
+                        timestamp:
+                          type: string
+                          format: date-time
+                          description: When the interaction occurred
+
+  /ai/model/train:
+    post:
+      operationId: trainAIModel
+      summary: Train Lucia's AI models
+      description: |
+        Initiates training of Lucia's AI models using provided data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                trainingDataUrl:
+                  type: string
+                  description: URL to the training data set
+                parameters:
+                  type: object
+                  description: Parameters for model training
+                  properties:
+                    epochs:
+                      type: integer
+                      description: Number of training epochs
+                    learningRate:
+                      type: number
+                      format: float
+                      description: Learning rate for the training algorithm
+      responses:
+        '200':
+          description: AI model training initiated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  taskId:
+                    type: string
+                    description: ID of the training task
+                  status:
+                    type: string
+                    description: Current status of the training task
+
+  /ai/model/status:
+    get:
+      operationId: getAIModelTrainingStatus
+      summary: Retrieve AI model training status
+      description: |
+        Retrieves the status of an AI model training task.
+      parameters:
+        - name: taskId
+          in: query
+          required: true
+          schema:
+            type: string
+            description: ID of the training task
+      responses:
+        '200':
+          description: AI model training status retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  taskId:
+                    type: string
+                    description: ID of the training task
+                  status:
+                    type: string
+                    description: Current status (e.g., "pending", "in progress", "completed")
+                  progress:
+                    type: number
+                    format: float
+                    description: Training progress percentage
+
+  /blockchain/cross-chain/transfer:
+    post:
+      operationId: crossChainTransfer
+      summary: Execute cross-chain asset transfer
+      description: |
+        Transfers assets between Hedera and other supported blockchain networks.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fromChain:
+                  type: string
+                  description: Source blockchain network (e.g., "Hedera", "Ethereum")
+                toChain:
+                  type: string
+                  description: Destination blockchain network
+                fromAccountId:
+                  type: string
+                  description: Source account ID
+                toAccountId:
+                  type: string
+                  description: Destination account ID
+                amount:
+                  type: number
+                  description: Amount to transfer
+      responses:
+        '200':
+          description: Cross-chain transfer initiated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transferId:
+                    type: string
+                    description: ID of the cross-chain transfer
+                  status:
+                    type: string
+                    description: Current status of the transfer
+
+  /auth/mfa/setup:
+    post:
+      operationId: setupMFA
+      summary: Setup Multi-Factor Authentication
+      description: |
+        Enables multi-factor authentication for enhanced user security.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  description: The user's ID
+                mfaMethod:
+                  type: string
+                  description: The MFA method to setup (e.g., "email", "sms", "authenticatorApp")
+      responses:
+        '200':
+          description: MFA setup initiated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mfaSetupId:
+                    type: string
+                    description: ID for the MFA setup process
+                  status:
+                    type: string
+                    description: Status of the MFA setup
+
+  /auth/mfa/verify:
+    post:
+      operationId: verifyMFA
+      summary: Verify Multi-Factor Authentication code
+      description: |
+        Verifies the MFA code provided by the user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  description: The user's ID
+                mfaCode:
+                  type: string
+                  description: The MFA code entered by the user
+      responses:
+        '200':
+          description: MFA verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isVerified:
+                    type: boolean
+                    description: Whether the MFA verification was successful
